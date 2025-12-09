@@ -1,0 +1,113 @@
+.site-header {
+  width: 100%;
+  background: #0f1724; /* dark navy */
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.site-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand .brand-link {
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.125rem;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.nav-link {
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: 0;
+  padding: 0.4rem;
+  cursor: pointer;
+}
+
+.hamburger {
+  display: inline-block;
+  width: 22px;
+  height: 2px;
+  background: #fff;
+  position: relative;
+  transition: transform 200ms ease;
+}
+.hamburger::before,
+.hamburger::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 22px;
+  height: 2px;
+  background: #fff;
+  transition: transform 200ms ease, top 200ms ease, bottom 200ms ease, opacity 200ms ease;
+}
+.hamburger::before { top: -7px; }
+.hamburger::after { bottom: -7px; }
+
+.hamburger.is-active {
+  background: transparent;
+}
+.hamburger.is-active::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+.hamburger.is-active::after {
+  transform: rotate(-45deg);
+  bottom: 0;
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+  .nav-toggle { display: block; }
+  .site-nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    background: #071025;
+    padding: 0.5rem 1rem 0.8rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .site-nav.open { display: flex; }
+  .nav-link {
+    display: block;
+    padding: 0.75rem 0.5rem;
+    border-radius: 4px;
+  }
+}
+
+/* Desktop tweaks */
+@media (min-width: 768px) {
+  .site-nav { display: flex; }
+}
