@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false); // desktop dropdown
   const [geoOpen, setGeoOpen] = useState(false); // desktop nested
   const [otherOpen, setOtherOpen] = useState(false); // desktop nested
-  const [selectedService, setSelectedService] = useState('Geotechnical'); // Keep existing line
+  const [selectedService, setSelectedService] = useState<string | null>(null); // which group is open on the right
+  const hoverTimeout = useRef<number | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const serviceGroups: { [key: string]: { title: string; href: string; desc?: string }[] } = {
     'Geotechnical': [
@@ -26,6 +28,24 @@ const Header: React.FC = () => {
     { href: '/contact', label: 'CONTACT US' },
   ];
 
+  // close dropdown when clicking outside (ref wraps the button + menu)
+  useEffect(() => {
+    function handleDocClick(e: MouseEvent) {
+      if (!dropdownRef.current) return;
+      const target = e.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
+        setServicesOpen(false);
+        setSelectedService(null);
+      }
+    }
+
+    if (servicesOpen) {
+      document.addEventListener('mousedown', handleDocClick);
+    }
+
+    return () => document.removeEventListener('mousedown', handleDocClick);
+  }, [servicesOpen]);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
@@ -36,7 +56,7 @@ const Header: React.FC = () => {
             {/* Left: logo only */}
             <div className="flex items-center">
               <a href="/#home" className="flex items-center">
-                <img src="/logo.png" alt="Lumen LTD logo" className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain" />
+                <img src="/logo.png" alt="GLOWAC logo" className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain" />
               </a>
             </div>
 
@@ -49,7 +69,7 @@ const Header: React.FC = () => {
                 {links.map(link => {
                   if (link.label === 'SERVICES') {
                     return (
-                      <div key={link.href} className="relative" onMouseEnter={() => setServicesOpen(true)} onMouseLeave={() => setServicesOpen(false)}>
+                      <div ref={dropdownRef} key={link.href} className="relative">
                         <button
                           onClick={() => setServicesOpen(v => !v)}
                           aria-haspopup="true"
@@ -73,26 +93,32 @@ const Header: React.FC = () => {
                                 <ul className="flex flex-col">
                                   {Object.entries(serviceGroups).map(([group, items]) => (
                                     <li key={group} className="last:border-b-0 relative group">
-                                      <a
-                                        href={group === 'Geotechnical' ? '/services/geotechnical' : '/services/other'}
-                                        onMouseEnter={() => setSelectedService(group)}
-                                        className={`block px-4 py-2 text-teal-800 hover:bg-teal-50 transition-colors duration-150 ${selectedService === group ? 'bg-teal-50 font-semibold' : 'font-medium text-teal-700'}`}
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          // toggle this group's subpanel
+                                          setSelectedService(prev => prev === group ? null : group);
+                                        }}
+                                        className={`w-full text-left block px-4 py-2 text-teal-800 hover:bg-teal-50 transition-colors duration-150 ${selectedService === group ? 'bg-teal-50 font-semibold' : 'font-medium text-teal-700'}`}
                                       >
                                         {group}
-                                      </a>
+                                      </button>
 
-                                      <ul className="hidden group-hover:block absolute left-full top-0 bg-white border border-gray-200 shadow-lg rounded-md ml-1 w-64 z-10">
-                                        {items.map((s) => (
-                                          <li key={s.href} className="border-b last:border-b-0">
-                                            <a
-                                              href={s.href}
-                                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"
-                                            >
-                                              {s.title}
-                                            </a>
-                                          </li>
-                                        ))}
-                                      </ul>
+                                      {selectedService === group && (
+                                        <ul className="absolute left-full top-0 bg-white border border-gray-200 shadow-lg rounded-md w-64 z-40">
+                                          {items.map((s) => (
+                                            <li key={s.href} className="border-b last:border-b-0">
+                                              <a
+                                                href={s.href}
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"
+                                              >
+                                                {s.title}
+                                              </a>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
                                     </li>
                                   ))}
                                 </ul>

@@ -167,8 +167,12 @@ const Banner: React.FC<{ slides?: typeof slidesData }> = ({ slides = slidesData 
             <h1 className={`text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight mb-6 transition-all duration-300 delay-150 ${
               current !== undefined ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}>
-              <span className="block text-white drop-shadow-2xl">{slides[current]?.title}</span>
-              <span className="block text-white drop-shadow-2xl">{slides[current]?.subtitle}</span>
+              <span className={`block text-white drop-shadow-2xl transform transition-transform duration-700 ${isTransitioning ? '-translate-x-8 opacity-0' : 'translate-x-0 opacity-100'}`}>
+                {slides[current]?.title}
+              </span>
+              <span className={`block text-white drop-shadow-2xl transform transition-transform duration-700 ${isTransitioning ? 'translate-x-8 opacity-0' : 'translate-x-0 opacity-100'}`}>
+                {slides[current]?.subtitle}
+              </span>
             </h1>
 
             <p className={`mt-6 text-xl sm:text-2xl text-white/95 max-w-4xl mx-auto leading-relaxed drop-shadow-lg transition-all duration-300 delay-200 ${

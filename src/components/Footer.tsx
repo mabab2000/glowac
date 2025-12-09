@@ -59,10 +59,10 @@ const Footer: React.FC = () => {
                 Rwanda - Kigali City 24 KG 607 St
               </p>
               <p className="text-teal-200">
-                Phone: +250 787 100 805
+                Phone: +250 788 764 432
               </p>
               <p className="text-emerald-200">
-                Email: info@lumenltd.rw
+                Email: info@glowac.rw
               </p>
             </div>
           </div>
@@ -74,7 +74,7 @@ const Footer: React.FC = () => {
       {/* WhatsApp Float Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <a
-          href="https://wa.me/250787100805"
+          href="https://wa.me/250788764432"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat with us on WhatsApp"

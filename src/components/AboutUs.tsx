@@ -24,7 +24,7 @@ const AboutUs: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <span className="inline-block text-xs mt-0 font-semibold uppercase bg-teal-100 text-teal-700 px-3 py-1 rounded-full mb-4">
-           About Glowac
+           About GLOWAC
           </span>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Building Strong
@@ -41,7 +41,7 @@ const AboutUs: React.FC = () => {
               Our Commitment to Excellence
             </h3>
             <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
-              Glowac is committed to building strong relationships with clients by providing exceptional customer service, the highest quality legally defensible data.
+              GLOWAC is committed to building strong relationships with clients by providing exceptional customer service, the highest quality legally defensible data.
             </p>
             <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
               Besides training, experience and knowledge of the GLOWAC team members, their values are merged to reflect the following criteria for business success.
