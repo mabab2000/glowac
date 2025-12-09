@@ -12,7 +12,7 @@ const AboutUs: React.FC = () => {
   ];
 
   return (
-    <section id="about" className="pt-10 pb-20 relative">
+    <section id="about" className="pt-0 pb-20 relative">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-teal-100 rounded-full opacity-30"></div>
@@ -23,12 +23,9 @@ const AboutUs: React.FC = () => {
         <div className="w-full lg:max-w-[calc(56rem+6%)] mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-          <span className="inline-block text-xs mt-0 font-semibold uppercase bg-teal-100 text-teal-700 px-3 py-1 rounded-full mb-4">
-           About GLOWAC
-          </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Building Strong
-            <span className="block text-teal-600">Relationships</span>
+         
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900  mt-6 mb-6">
+            <span className="block text-teal-600">About us</span>
           </h2>
           <div className="w-24 h-1 bg-teal-500 mx-auto"></div>
         </div>

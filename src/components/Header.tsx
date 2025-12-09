@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -22,7 +23,7 @@ const Header: React.FC = () => {
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false); // mobile submenu
 
   const links = [
-    { href: '/#home', label: 'HOME' },
+    { href: '/', label: 'HOME' },
     { href: '/about', label: 'ABOUT US' },
     { href: '/services', label: 'SERVICES' },
     { href: '/contact', label: 'CONTACT US' },
@@ -54,10 +55,10 @@ const Header: React.FC = () => {
             
 
             {/* Left: logo only */}
-            <div className="flex items-center">
-              <a href="/#home" className="flex items-center">
+              <div className="flex items-center">
+              <Link to="/" className="flex items-center">
                 <img src="/logo.png" alt="GLOWAC logo" className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain" />
-              </a>
+              </Link>
             </div>
 
             {/* Middle (spacer) */}
@@ -109,12 +110,12 @@ const Header: React.FC = () => {
                                         <ul className="absolute left-full top-0 bg-white border border-gray-200 shadow-lg rounded-md w-64 z-40">
                                           {items.map((s) => (
                                             <li key={s.href} className="border-b last:border-b-0">
-                                              <a
-                                                href={s.href}
+                                              <Link
+                                                to={s.href}
                                                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"
                                               >
                                                 {s.title}
-                                              </a>
+                                              </Link>
                                             </li>
                                           ))}
                                         </ul>
@@ -133,9 +134,9 @@ const Header: React.FC = () => {
 
                   // default link
                   return (
-                    <a
+                    <Link
                       key={link.href}
-                      href={link.href}
+                      to={link.href}
                       className="text-gray-600 hover:text-teal-400 text-base font-medium tracking-wide transition-colors duration-200 inline-flex items-center gap-2 whitespace-nowrap"
                     >
                       {/* Icon + label */}
@@ -156,7 +157,7 @@ const Header: React.FC = () => {
                         </svg>
                       )}
                       <span>{link.label}</span>
-                    </a>
+                    </Link>
                   );
                 })}
               </nav>
@@ -211,17 +212,17 @@ const Header: React.FC = () => {
                       </button>
 
                       <div id="mobile-services-submenu" className={`${mobileServicesOpen ? 'block' : 'hidden'} pl-6 mt-1 flex flex-col gap-1` }>
-                        <a href="/services/geotechnical" className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">Geotechnical</a>
-                        <a href="/services/other" className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">Other Service</a>
+                        <Link to="/services/geotechnical" className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">Geotechnical</Link>
+                        <Link to="/services/other" className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">Other Service</Link>
                       </div>
                     </div>
                   );
                 }
 
                 return (
-                  <a 
+                  <Link 
                     key={link.href} 
-                    href={link.href} 
+                    to={link.href} 
                     className="px-3 py-3 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md text-base font-medium tracking-wide transition-colors duration-200 flex items-center gap-2 whitespace-nowrap"
                   >
                     {/* mobile icons */}
@@ -242,7 +243,7 @@ const Header: React.FC = () => {
                       </svg>
                     )}
                     <span>{link.label}</span>
-                  </a>
+                  </Link>
                 );
               })}
             </nav>
