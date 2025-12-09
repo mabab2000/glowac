@@ -20,18 +20,15 @@ const AboutUs: React.FC = () => {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="w-full lg:max-w-[calc(56rem+6%)] mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-block mb-6">
-            <span className="px-6 py-3 bg-white border-2 border-teal-200 text-teal-700 text-lg font-semibold rounded-2xl shadow-lg">
-              About Glowac
-            </span>
-          </div>
-          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-8">
+         
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Building Strong
             <span className="block text-teal-600">Relationships</span>
           </h2>
-          <div className="w-32 h-1 bg-teal-500 mx-auto"></div>
+          <div className="w-24 h-1 bg-teal-500 mx-auto"></div>
         </div>
 
         {/* Main content */}
@@ -41,10 +38,10 @@ const AboutUs: React.FC = () => {
             <h3 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
               Our Commitment to Excellence
             </h3>
-            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed">
+            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
               Glowac is committed to building strong relationships with clients by providing exceptional customer service, the highest quality legally defensible data.
             </p>
-            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed">
+            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
               Besides training, experience and knowledge of the GLOWAC team members, their values are merged to reflect the following criteria for business success.
             </p>
             
@@ -136,26 +133,42 @@ const AboutUs: React.FC = () => {
 
         {/* Additional Stats section */}
         <div className="bg-white rounded-2xl shadow-xl border-2 border-teal-200 p-8 md:p-12">
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="group">
-              <div className="text-4xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
+            {/* Stat 1 */}
+            <div className="group flex-1">
+              <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
                 100%
               </div>
               <p className="text-gray-700 font-medium">Client Satisfaction</p>
             </div>
-            <div className="group">
-              <div className="text-4xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+
+            {/* Separator (md+) - taller vertical line with horizontal padding, black color */}
+            <div className="hidden md:flex items-center px-6">
+              <div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div>
+            </div>
+
+            {/* Stat 2 */}
+            <div className="group flex-1">
+              <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
                 24/7
               </div>
               <p className="text-gray-700 font-medium">Customer Support</p>
             </div>
-            <div className="group">
-              <div className="text-4xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+
+            {/* Separator (md+) */}
+            <div className="hidden md:flex items-center px-6">
+              <div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div>
+            </div>
+
+            {/* Stat 3 */}
+            <div className="group flex-1">
+              <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
                 ∞
               </div>
               <p className="text-gray-700 font-medium">Commitment to Quality</p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

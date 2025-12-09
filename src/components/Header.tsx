@@ -12,7 +12,7 @@ const Header: React.FC = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-        <div className="w-full bg-white border-2 border-teal-300 rounded-xl shadow-xl backdrop-blur-md px-4 py-3">
+        <div className="w-full lg:max-w-4xl mx-auto bg-white border-2 border-teal-300 rounded-xl shadow-xl backdrop-blur-md px-4 py-3">
           <div className="grid grid-cols-3 items-center gap-4">
             
 
