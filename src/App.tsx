@@ -5,6 +5,8 @@ import Banner from './components/Banner';
 import Footer from './components/Footer';
 import ScrollProgressCircle from './components/ScrollProgressCircle';
 import AboutPage from './pages/AboutPage';
+import AboutPreview from './components/AboutPreview';
+import AboutUs from './components/AboutUs';
 import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 
@@ -21,6 +23,15 @@ function Home() {
   return (
     <>
       <Banner />
+      <div className="pt-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2">
+            <span className="block text-black">Building Strong</span>
+            <span className="block text-emerald-600">Relationships</span>
+          </h1>
+        </div>
+      </div>
+      <AboutUs />
     </>
   );
 }

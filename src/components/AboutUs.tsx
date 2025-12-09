@@ -1,4 +1,104 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+// --- Request Service Cards component (moved above AboutUs to avoid runtime reference errors) ---
+const RequestServiceCards: React.FC = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget as HTMLFormElement);
+    const name = form.get('name') || '';
+    // TODO: wire to backend API
+    alert(`Request for Geotechnical & Concrete Services submitted by ${name}`);
+    (e.currentTarget as HTMLFormElement).reset();
+    setShowModal(false);
+  };
+
+  return (
+    <>
+      <section className="mt-8 mb-16">
+        <div className="text-center mb-6">
+          <h3 className="text-3xl font-bold text-gray-900">Request a Service</h3>
+          <p className="text-gray-600">Contact us for our geotechnical and concrete services.</p>
+        </div>
+
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 flex-none rounded-full bg-teal-50 text-teal-600 flex items-center justify-center text-2xl font-bold">
+                G
+              </div>
+              <div>
+                <h4 className="text-2xl font-semibold text-gray-900">Geotechnical & Concrete Services</h4>
+                <p className="text-gray-600">In-situ investigations, foundation support and concrete testing.</p>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <button
+                onClick={() => setShowModal(true)}
+                className="inline-flex items-center px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                Request This Service
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Request Geotechnical Services</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input type="hidden" name="service" value="Geotechnical & Concrete Services" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input name="name" required className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input name="email" type="email" required className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input name="phone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Project Details</label>
+                <textarea name="message" rows={3} placeholder="Please describe your project requirements..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"></textarea>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
+                  Send Request
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 const AboutUs: React.FC = () => {
   const workingHours = [
@@ -24,9 +124,7 @@ const AboutUs: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-16">
          
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900  mt-6 mb-6">
-            <span className="block text-teal-600">About us</span>
-          </h2>
+         
           <div className="w-24 h-1 bg-teal-500 mx-auto"></div>
         </div>
 
@@ -130,55 +228,87 @@ const AboutUs: React.FC = () => {
           </div>
         </div>
 
-        {/* Why Choose Us section */}
-        <div className="mt-12 mb-8 text-center">
-          <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
-            Why Choose Us
-          </h3>
-          <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
-          <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
-            We combine deep technical expertise with a commitment to client success — delivering reliable, timely, and cost-effective geotechnical solutions tailored to your project's needs.
-          </p>
-        </div>
+        {/* What We Do — Prominent section with big cards */}
+        <div className="mt-12 text-center">
+          <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">What We Do</h3>
+          <div className="w-24 h-1 bg-teal-500 mx-auto mb-8"></div>
 
-        {/* Additional Stats section */}
-        <div className="bg-white rounded-2xl shadow-xl border-2 border-teal-200 p-8 md:p-12">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
-            {/* Stat 1 */}
-            <div className="group flex-1">
-              <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
-                100%
-              </div>
-              <p className="text-gray-700 font-medium">Client Satisfaction</p>
+            <div className="max-w-6xl mx-auto grid gap-8 sm:grid-cols-1 md:grid-cols-3 px-4">
+            {/* Card 1: Geotechnical & Concrete Services */}
+            <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
+              <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <rect x="8" y="32" width="48" height="20" rx="2" fill="currentColor" opacity="0.12" />
+                <path d="M12 32V18a2 2 0 012-2h8v16H12z" fill="currentColor" opacity="0.18" />
+                <path d="M34 12h6v8h-6zM20 12h6v8h-6z" fill="currentColor" />
+                <path d="M8 54h48" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.9" />
+              </svg>
+              <h4 className="text-2xl font-semibold text-gray-900 mb-2 text-center">Geotechnical & Concrete Services</h4>
+              <p className="text-gray-700 text-justify">In-situ investigations, foundation design support, and concrete testing to ensure durable, safe structures.</p>
             </div>
 
-            {/* Separator (md+) - taller vertical line with horizontal padding, black color */}
-            <div className="hidden md:flex items-center px-6">
-              <div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div>
+            {/* Card 2: Topographical Surveying */}
+            <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
+              <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M8 20l12-6 12 6 12-6 12 6v26l-12 6-12-6-12 6L8 46V20z" fill="currentColor" opacity="0.14" />
+                <circle cx="32" cy="30" r="6" fill="currentColor" />
+                <path d="M32 18v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <h4 className="text-2xl font-semibold text-gray-900 mb-2 text-center">Topographical Surveying</h4>
+              <p className="text-gray-700 text-justify">High-precision land surveys, contour mapping and site layout services to guide design and construction.</p>
             </div>
 
-            {/* Stat 2 */}
-            <div className="group flex-1">
-              <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
-                24/7
-              </div>
-              <p className="text-gray-700 font-medium">Customer Support</p>
-            </div>
-
-            {/* Separator (md+) */}
-            <div className="hidden md:flex items-center px-6">
-              <div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="group flex-1">
-              <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">
-                ∞
-              </div>
-              <p className="text-gray-700 font-medium">Commitment to Quality</p>
+            {/* Card 3: Environmental Impact Assessment */}
+            <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
+              <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M32 8c8 0 14 6 14 14 0 11-14 22-14 22s-14-11-14-22c0-8 6-14 14-14z" fill="currentColor" opacity="0.16" />
+                <path d="M24 34c2-6 8-10 12-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M40 42c0 4-6 6-8 6s-8-2-8-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <h4 className="text-2xl font-semibold text-gray-900 mb-2 text-center">Environmental Impact Assessment</h4>
+              <p className="text-gray-700 text-justify">Comprehensive EIA studies and mitigation planning to minimise project environmental footprint.</p>
             </div>
           </div>
+
+          {/* (Stats block moved later) */}
+
+          {/* Why Choose Us section (moved here after stats) */}
+          <div className="mt-8 mb-8 text-center">
+            <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">Why Choose Us</h3>
+            <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
+            <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
+              We combine deep technical expertise with a commitment to client success — delivering reliable, timely, and cost-effective geotechnical solutions tailored to your project's needs.
+            </p>
+          </div>
+
+          {/* Additional Stats section (placed under Why Choose Us) */}
+          <div className="bg-white rounded-2xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mt-8 mb-8">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
+              <div className="group flex-1">
+                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">100%</div>
+                <p className="text-gray-700 font-medium">Client Satisfaction</p>
+              </div>
+
+              <div className="hidden md:flex items-center px-6"><div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div></div>
+
+              <div className="group flex-1">
+                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">24/7</div>
+                <p className="text-gray-700 font-medium">Customer Support</p>
+              </div>
+
+              <div className="hidden md:flex items-center px-6"><div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div></div>
+
+              <div className="group flex-1">
+                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">∞</div>
+                <p className="text-gray-700 font-medium">Commitment to Quality</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Request Service section */}
+          <RequestServiceCards />
         </div>
+
+        
         </div>
       </div>
     </section>
