@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Banner from './components/Banner';
 import AboutUs from './components/AboutUs';
 import Footer from './components/Footer';
+import ScrollProgressCircle from './components/ScrollProgressCircle';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Header />
       <Banner />
       <AboutUs />
+      <ScrollProgressCircle />
       <Footer />
     </>
   );

@@ -12,7 +12,7 @@ const AboutUs: React.FC = () => {
   ];
 
   return (
-    <section id="about" className="py-20 relative">
+    <section id="about" className="pt-10 pb-20 relative">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-teal-100 rounded-full opacity-30"></div>
@@ -23,7 +23,9 @@ const AboutUs: React.FC = () => {
         <div className="w-full lg:max-w-[calc(56rem+6%)] mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-         
+          <span className="inline-block text-xs mt-0 font-semibold uppercase bg-teal-100 text-teal-700 px-3 py-1 rounded-full mb-4">
+           About Glowac
+          </span>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Building Strong
             <span className="block text-teal-600">Relationships</span>
@@ -129,6 +131,17 @@ const AboutUs: React.FC = () => {
               <p className="text-lg font-semibold text-gray-700">Tests We Conduct</p>
             </div>
           </div>
+        </div>
+
+        {/* Why Choose Us section */}
+        <div className="mt-12 mb-8 text-center">
+          <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
+            Why Choose Us
+          </h3>
+          <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
+          <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
+            We combine deep technical expertise with a commitment to client success — delivering reliable, timely, and cost-effective geotechnical solutions tailored to your project's needs.
+          </p>
         </div>
 
         {/* Additional Stats section */}
