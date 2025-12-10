@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 
 // --- Request Service Cards component (moved above AboutUs to avoid runtime reference errors) ---
-const RequestServiceCards: React.FC = () => {
+export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ defaultService }) => {
   const [showModal, setShowModal] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget as HTMLFormElement);
     const name = form.get('name') || '';
+    const service = form.get('service') || defaultService || 'Geotechnical & Concrete Services';
     // TODO: wire to backend API
-    alert(`Request for Geotechnical & Concrete Services submitted by ${name}`);
+    alert(`Request for ${service} submitted by ${name}`);
     (e.currentTarget as HTMLFormElement).reset();
     setShowModal(false);
   };
@@ -61,7 +62,7 @@ const RequestServiceCards: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input type="hidden" name="service" value="Geotechnical & Concrete Services" />
+              <input type="hidden" name="service" value={defaultService ?? "Geotechnical & Concrete Services"} />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -304,8 +305,7 @@ const AboutUs: React.FC = () => {
             </div>
           </div>
 
-          {/* Request Service section */}
-          <RequestServiceCards />
+          {/* Request Service section removed from About page — moved to Services page */}
         </div>
 
         
