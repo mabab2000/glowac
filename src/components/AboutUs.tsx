@@ -120,7 +120,7 @@ const AboutUs: React.FC = () => {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="w-full lg:max-w-[calc(56rem+6%)] mx-auto">
+        <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
          

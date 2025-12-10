@@ -49,8 +49,10 @@ const Header: React.FC = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-        <div className="w-full lg:max-w-4xl mx-auto bg-white border-2 border-teal-300 rounded-xl shadow-xl backdrop-blur-md px-4 py-3">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0">
+        <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
+          <div className="bg-white border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md p-0">
+          <div className="px-0 py-0">
           <div className="grid grid-cols-3 items-center gap-4">
             
 
@@ -181,8 +183,10 @@ const Header: React.FC = () => {
 
             
           </div>
+          </div>
         </div>
       </div>
+    </div>
 
       {/* Mobile Navigation Panel */}
       <div id="mobile-menu" className={`${open ? 'block' : 'hidden'} lg:hidden bg-gray-900/95 border-t border-gray-700`}>

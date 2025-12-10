@@ -20,12 +20,7 @@ const AboutPreview: React.FC<Props> = ({ ctaTo = '/about', ctaLabel = 'Learn Mor
                   <span className="block text-2xl font-bold text-emerald-600 mb-4">Relationships</span>
                 </>
               )}
-              <p className="text-gray-700 max-w-2xl mx-auto mb-6">GLOWAC builds strong relationships with clients by providing exceptional service and high-quality, defensible geotechnical data.</p>
-              <div className="flex justify-center">
-                <Link to={ctaTo} className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white font-semibold rounded-md shadow hover:bg-emerald-700 transition">
-                  {ctaLabel}
-                </Link>
-              </div>
+              {/* Intro paragraph and CTA removed as requested */}
             </div>
           </div>
         </div>
