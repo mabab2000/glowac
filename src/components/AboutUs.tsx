@@ -123,10 +123,11 @@ const AboutUs: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
         {/* Header */}
-        <div className="text-center mb-16">
-         
-         
-          <div className="w-24 h-1 bg-teal-500 mx-auto"></div>
+        <div className="mb-16">
+          <div className="bg-emerald-100 rounded-none text-center p-8">
+            <h1 className="text-3xl font-bold text-emerald-600 mb-2">About Us</h1>
+            <div className="w-20 h-1 bg-emerald-600 mx-auto" />
+          </div>
         </div>
 
         {/* Main content */}

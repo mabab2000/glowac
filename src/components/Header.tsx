@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -28,6 +28,12 @@ const Header: React.FC = () => {
     { href: '/services', label: 'SERVICES' },
     { href: '/contact', label: 'CONTACT US' },
   ];
+
+  const location = useLocation();
+  // detect when we're on a specific service detail route like /services/geotechnical/service1
+  const locPath = location.pathname.replace(/(^\/|\/$)/g, '');
+  const locSegments = locPath.split('/');
+  const isServiceDetail = locSegments[0] === 'services' && locSegments.length > 1 && locSegments.slice(1).join('/') !== '';
 
   // close dropdown when clicking outside (ref wraps the button + menu)
   useEffect(() => {
@@ -71,6 +77,18 @@ const Header: React.FC = () => {
               <nav aria-label="Primary navigation" className="hidden lg:flex lg:items-center lg:space-x-6 mb-0 self-end">
                 {links.map(link => {
                   if (link.label === 'SERVICES') {
+                    // When viewing a specific service, hide/disable the dropdown and render a simple link
+                    if (isServiceDetail) {
+                      return (
+                        <Link
+                          key={link.href}
+                          to={link.href}
+                          className="text-gray-600 hover:text-teal-400 text-base font-medium tracking-wide transition-colors duration-200 inline-flex items-center gap-2 whitespace-nowrap"
+                        >
+                          <span>{link.label}</span>
+                        </Link>
+                      );
+                    }
                     return (
                       <div ref={dropdownRef} key={link.href} className="relative">
                         <button
@@ -195,6 +213,14 @@ const Header: React.FC = () => {
             <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
               {links.map(link => {
                 if (link.label === 'SERVICES') {
+                  // On a specific service detail page hide the mobile dropdown and show a simple link
+                  if (isServiceDetail) {
+                    return (
+                      <Link key={link.href} to={link.href} className="px-3 py-3 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md text-base font-medium tracking-wide transition-colors duration-200 flex items-center gap-2 whitespace-nowrap">
+                        <span>{link.label}</span>
+                      </Link>
+                    );
+                  }
                   return (
                     <div key={link.href} className="flex flex-col">
                       <button

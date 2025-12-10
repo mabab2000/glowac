@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { RequestServiceCards } from '../components/AboutUs';
 
@@ -18,6 +18,21 @@ const ServicesPage: React.FC = () => {
   const pathSegments = path.split('/');
   const subpath = pathSegments.length > 1 ? pathSegments.slice(1).join('/') : '';
   const serviceTitle = serviceTitleMap[subpath] || null;
+  // when viewing a specific service, scroll page to bottom (show footer) on mount
+  useEffect(() => {
+    if (serviceTitle) {
+      // delay slightly to allow layout to settle
+      const t = setTimeout(() => {
+        try {
+          const height = document.documentElement.scrollHeight || document.body.scrollHeight;
+          window.scrollTo({ top: height, left: 0, behavior: 'auto' });
+        } catch (e) {
+          // ignore
+        }
+      }, 50);
+      return () => clearTimeout(t);
+    }
+  }, [serviceTitle]);
   return (
     <main className="pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -50,6 +50,8 @@ const Banner: React.FC<{ slides?: typeof slidesData }> = ({ slides = slidesData 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const hoverRef = useRef(false);
+  // track image load status: true = loaded, false = failed, undefined = pending
+  const [imageStatus, setImageStatus] = useState<(boolean | undefined)[]>(() => new Array(slides.length).fill(undefined));
 
   useEffect(() => {
     const start = () => {
@@ -67,6 +69,69 @@ const Banner: React.FC<{ slides?: typeof slidesData }> = ({ slides = slidesData 
     start();
     return () => { if (intervalRef.current) window.clearInterval(intervalRef.current); };
   }, [slides.length, playing]);
+
+  // preload images and update imageStatus
+  useEffect(() => {
+    let mounted = true;
+    slides.forEach((s, i) => {
+      const img = new Image();
+      img.onload = () => {
+        if (!mounted) return;
+        setImageStatus(prev => {
+          const copy = prev.slice();
+          copy[i] = true;
+          return copy;
+        });
+      };
+      img.onerror = () => {
+        if (!mounted) return;
+        setImageStatus(prev => {
+          const copy = prev.slice();
+          copy[i] = false;
+          return copy;
+        });
+      };
+      img.src = s.image;
+    });
+    return () => { mounted = false; };
+  }, [slides]);
+
+  // if all images failed to load, hide the banner section
+  const allFailed = imageStatus.length === slides.length && imageStatus.every(v => v === false);
+  // loading state: some images still pending (undefined) and not all failed
+  const isLoading = imageStatus.length === slides.length && imageStatus.some(v => v === undefined) && !allFailed;
+  if (allFailed) return null;
+
+  // show a big friendly loading UI while banner images are preloading
+  if (isLoading) {
+    return (
+      <section className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-20 lg:py-28 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center">
+          <div className="flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center">
+              <h2 className="text-4xl sm:text-5xl font-extrabold tracking-widest uppercase drop-shadow-lg">GLOWAC</h2>
+              <div className="mt-2 h-1 w-28 bg-white/30 rounded-full" />
+            </div>
+
+            <svg className="animate-spin h-20 w-20 text-emerald-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+
+            <div className="text-center">
+              <p className="mt-2 text-lg sm:text-xl font-medium text-white/95">Loading</p>
+              <div className="mt-1 text-white/80">
+                <span className="animate-pulse">.</span>
+                <span className="animate-pulse delay-75">.</span>
+                <span className="animate-pulse delay-150">.</span>
+              </div>
+              <p className="mt-3 text-white/80">Preparing images and visuals — this may take a moment.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const onMouseEnter = () => { hoverRef.current = true; };
   const onMouseLeave = () => { hoverRef.current = false; };
@@ -105,28 +170,31 @@ const Banner: React.FC<{ slides?: typeof slidesData }> = ({ slides = slidesData 
     >
       {/* slides */}
       <div className="absolute inset-0 min-h-[70vh]">
-        {slides.map((slide, i) => (
-          <div
-            key={slide.image + i}
-            data-slide-index={i}
-            aria-hidden={current !== i}
-            className={`absolute inset-0 bg-center bg-cover transition-all duration-500 ease-out will-change-transform ${
-              isTransitioning ? 'blur-sm scale-110' : ''
-            }`}
-            style={{
-              backgroundImage: `url(${slide.image})`,
-              backgroundColor: '#1f2937',
-              opacity: current === i ? 1 : 0,
-              transform: current === i ? 'scale(1.1) rotate(0.5deg)' : 'scale(1.0) rotate(0deg)',
-              filter: `blur(${blur}px) brightness(${current === i ? 0.8 : 0.6}) contrast(1.2)`,
-              zIndex: current === i ? 2 : 1,
-            }}
-            onError={(e) => {
-              const target = e.target as HTMLElement;
-              target.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            }}
-          />
-        ))}
+        {slides.map((slide, i) => {
+          const imgLoaded = imageStatus[i];
+          // If image explicitly failed and no fallback desired, you can skip rendering
+          const backgroundStyle = imgLoaded === false
+            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            : `url(${slide.image})`;
+          return (
+            <div
+              key={slide.image + i}
+              data-slide-index={i}
+              aria-hidden={current !== i}
+              className={`absolute inset-0 bg-center bg-cover transition-all duration-500 ease-out will-change-transform ${
+                isTransitioning ? 'blur-sm scale-110' : ''
+              }`}
+              style={{
+                backgroundImage: backgroundStyle,
+                backgroundColor: '#1f2937',
+                opacity: current === i ? 1 : 0,
+                transform: current === i ? 'scale(1.1) rotate(0.5deg)' : 'scale(1.0) rotate(0deg)',
+                filter: `blur(${blur}px) brightness(${current === i ? 0.8 : 0.6}) contrast(1.2)`,
+                zIndex: current === i ? 2 : 1,
+              }}
+            />
+          );
+        })}
         
         {/* Navigation arrows removed (autoplay + indicators control slides) */}
         {/* subtle overlay to darken content for readability */}
