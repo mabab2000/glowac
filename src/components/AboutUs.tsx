@@ -113,7 +113,7 @@ const AboutUs: React.FC = () => {
   ];
 
   return (
-    <section id="about" className="pt-0 pb-20 relative">
+    <section id="about" className="pt-0 pb-20 relative mt-12 md:mt-16">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-teal-100 rounded-full opacity-30"></div>
@@ -122,14 +122,6 @@ const AboutUs: React.FC = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
-        {/* Header */}
-        <div className="mb-16">
-          <div className="bg-emerald-100 rounded-none text-center p-8">
-            <h1 className="text-3xl font-bold text-emerald-600 mb-2">About Us</h1>
-            <div className="w-20 h-1 bg-emerald-600 mx-auto" />
-          </div>
-        </div>
-
         {/* Main content */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description */}

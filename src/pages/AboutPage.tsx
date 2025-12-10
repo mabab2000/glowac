@@ -74,18 +74,20 @@ const AboutPage: React.FC = () => {
     <main className="pt-28">
       {/* Full-bleed dashed area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="w-full bg-emerald-100 rounded-none text-center p-12">
-          <h1 className="text-3xl font-bold text-emerald-600 mb-4">About Us</h1>
-          <div className="w-20 h-1 bg-emerald-600 mx-auto" />
+        <div className="w-full lg:max-w-4xl mx-auto">
+          <div className="bg-emerald-100 rounded-none text-center p-8 mt-12">
+            <h1 className="text-3xl font-bold text-emerald-600 mb-4">About Us</h1>
+            <div className="w-20 h-1 bg-emerald-600 mx-auto" />
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         {/* Background section */}
         <section className="mt-12">
-          <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
+          <div className="w-full lg:max-w-4xl mx-auto">
             <div className="p-8 rounded-none shadow-sm text-justify">
-            <h2 className="text-2xl font-semibold text-emerald-700 mb-3">Background</h2>
+            <h2 className="text-2xl font-semibold text-bold-700 mb-3">Background</h2>
             <div className="text-gray-700 leading-relaxed space-y-4">
               <p>
                 GLOWAC Laboratory has been providing geotechnical and materials testing services with a focus on dependable, accurate results and strong customer service for over two decades. Our laboratory combines experienced personnel with modern equipment and standardized methods to support construction, engineering and research projects across the region.
@@ -105,14 +107,14 @@ const AboutPage: React.FC = () => {
         {/* Quality Policy card */}
         {/* Interactive Core Values / Mission / Version section (not cards) */}
         <section className="mt-8">
-          <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
+          <div className="w-full lg:max-w-4xl mx-auto">
             <InteractivePolicy />
           </div>
         </section>
 
         {/* Environmental Lab section */}
         <section className="mt-12">
-          <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
+          <div className="w-full lg:max-w-4xl mx-auto">
             <div className="p-8 rounded-none border border-emerald-200 bg-emerald-50">
               <h2 className="text-2xl font-semibold text-emerald-700 mb-6 text-center">ENVIRONMENTAL LAB</h2>
               
@@ -134,18 +136,39 @@ const AboutPage: React.FC = () => {
 
         {/* Contact Our Team section */}
         <section className="mt-12">
-          <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
+          <div className="w-full lg:max-w-4xl mx-auto">
             <div className="p-8 rounded-none">
-              <h2 className="text-2xl font-semibold text-emerald-700 mb-8 text-center">CONTACT OUR TEAM</h2>
-              
-                {/* Auto-scrolling team carousel */}
-                <TeamCarousel />
-                <div className="mt-8 text-center">
-                <p className="text-gray-700 font-medium">
-                  For general inquiries: <span className="text-emerald-700">info@glowac.com</span> | <span className="text-emerald-700">(555) 123-4500</span>
-                </p>
-              </div>
-            </div>
+                  <h2 className="text-2xl font-semibold text-emerald-700 mb-8 text-center">CONTACT OUR TEAM</h2>
+
+                  {/* Featured CEO card (full-width, large image) */}
+                  <div className="mb-8">
+                    <div className="bg-white border border-emerald-200 overflow-hidden rounded-none flex flex-col md:flex-row items-stretch">
+                      {/* Image: stacked on mobile, left 40% on md+ */}
+                      <div className="md:w-2/5 flex-shrink-0">
+                        <img src="/images/image3.jpg" alt="CEO - Dr. John Smith" className="w-full h-64 md:h-full object-cover" />
+                      </div>
+
+                      {/* Content: right 60% on md+ */}
+                      <div className="p-8 md:w-3/5 text-left flex flex-col justify-center">
+                        <h3 className="text-3xl font-bold text-emerald-700">Dr. John Smith</h3>
+                        <p className="text-emerald-600 font-semibold mt-1">Chief Executive Officer</p>
+                        <p className="text-gray-600 mt-3">Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.</p>
+                        <div className="mt-6 flex items-center gap-3">
+                          <a href="mailto:ceo@glowac.com" className="inline-flex items-center px-5 py-3 bg-emerald-600 text-white font-semibold rounded-md shadow hover:bg-emerald-700">Contact CEO</a>
+                          <button className="px-5 py-3 border border-emerald-200 text-emerald-700 rounded-md">View Profile</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                    {/* Auto-scrolling team carousel */}
+                    <TeamCarousel />
+                    <div className="mt-8 text-center">
+                    <p className="text-gray-700 font-medium">
+                      For general inquiries: <span className="text-emerald-700">info@glowac.com</span> | <span className="text-emerald-700">(555) 123-4500</span>
+                    </p>
+                  </div>
+                </div>
           </div>
         </section>
       </div>
