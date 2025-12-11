@@ -105,7 +105,7 @@ const Banner: React.FC<{ slides?: typeof slidesData }> = ({ slides = slidesData 
   // show a big friendly loading UI while banner images are preloading
   if (isLoading) {
     return (
-      <section className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-20 lg:py-28 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-20">
+      <section className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-20 lg:py-28 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center">
           <div className="flex flex-col items-center gap-6">
             <div className="flex flex-col items-center">
@@ -164,7 +164,7 @@ const Banner: React.FC<{ slides?: typeof slidesData }> = ({ slides = slidesData 
 
   return (
     <section 
-      className="relative bg-transparent text-gray-900 py-20 lg:py-28 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-20"
+      className="relative bg-transparent text-gray-900 py-20 lg:py-28 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-0"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

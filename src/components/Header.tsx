@@ -55,26 +55,23 @@ const Header: React.FC = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-0">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
-          <div className="bg-white border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md p-0">
+          <div className="bg-gray-200 border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md py-0">
           <div className="px-0 py-0">
-          <div className="grid grid-cols-3 items-center gap-4">
+          <div className="grid grid-cols-3 items-stretch gap-4 h-20 md:h-24 lg:h-16">
             
 
             {/* Left: logo only */}
-              <div className="flex items-center">
-              <Link to="/" className="flex items-center">
-                <img src="/logo.png" alt="GLOWAC logo" className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain" />
+              <div className="flex items-center justify-center px-3 h-full overflow-hidden">
+              <Link to="/" className="flex items-center h-full w-full overflow-hidden">
+                <img src="/logo.png" alt="GLOWAC logo" className="h-full w-40 object-contain block" />
               </Link>
             </div>
 
-            {/* Middle (spacer) */}
-            <div />
-
-            {/* Right: navigation + mobile toggle */}
-            <div className="flex items-center justify-end">
-              <nav aria-label="Primary navigation" className="hidden lg:flex lg:items-center lg:space-x-6 mb-0 self-end">
+            {/* Middle: navigation (centered on desktop) */}
+            <div className="flex items-center justify-center h-full">
+              <nav aria-label="Primary navigation" className="hidden lg:flex lg:items-center lg:space-x-6 h-full">
                 {links.map(link => {
                   if (link.label === 'SERVICES') {
                     // When viewing a specific service, hide/disable the dropdown and render a simple link
@@ -181,7 +178,10 @@ const Header: React.FC = () => {
                   );
                 })}
               </nav>
+            </div>
 
+            {/* Right: mobile toggle only */}
+            <div className="flex items-center justify-end h-full">
               <button
                 onClick={() => setOpen(v => !v)}
                 className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-200 hover:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -229,7 +229,7 @@ const Header: React.FC = () => {
                         aria-expanded={mobileServicesOpen}
                         aria-controls="mobile-services-submenu"
                       >
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-0">
                           <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
                             <path strokeLinecap="round" strokeLinejoin="round" d="M20 8v6a2 2 0 01-2 2h-3l-2 3-2-3H6a2 2 0 01-2-2V8" />

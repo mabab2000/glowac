@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 // AboutPreview removed from this page to avoid empty placeholder card
 
+
+
 const InteractivePolicy: React.FC = () => {
   const [tab, setTab] = useState<'values' | 'mission' | 'version'>('values');
 
@@ -70,13 +72,19 @@ const InteractivePolicy: React.FC = () => {
 };
 
 const AboutPage: React.FC = () => {
+  const [aboutTitle, setAboutTitle] = useState<string>('About Us');
+  useEffect(() => {
+    const v = localStorage.getItem('about.headerTitle');
+    if (v) setAboutTitle(v);
+  }, []);
+
   return (
     <main className="pt-28">
       {/* Full-bleed dashed area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="w-full lg:max-w-4xl mx-auto">
-          <div className="bg-emerald-100 rounded-none text-center p-8 mt-12">
-            <h1 className="text-3xl font-bold text-emerald-600 mb-4">About Us</h1>
+            <div className="bg-emerald-100 rounded-none text-center p-8 mt-12">
+            <h1 className="text-3xl font-bold text-emerald-600 mb-4">{aboutTitle}</h1>
             <div className="w-20 h-1 bg-emerald-600 mx-auto" />
           </div>
         </div>
@@ -178,15 +186,70 @@ const AboutPage: React.FC = () => {
 
 export default AboutPage;
 
+// CEO Card component
+const CEOCard: React.FC = () => {
+  const [ceo, setCeo] = useState({ name: 'Dr. John Smith', title: 'Chief Executive Officer', email: 'ceo@glowac.com', img: '/images/image3.jpg', desc: 'Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.' });
+
+  useEffect(() => {
+    const name = localStorage.getItem('about.ceo.name') || 'Dr. John Smith';
+    const title = localStorage.getItem('about.ceo.title') || 'Chief Executive Officer';
+    const email = localStorage.getItem('about.ceo.email') || 'ceo@glowac.com';
+    const img = localStorage.getItem('about.ceo.img') || '/images/image3.jpg';
+    const desc = localStorage.getItem('about.ceo.desc') || 'Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.';
+    setCeo({ name, title, email, img, desc });
+  }, []);
+
+  return (
+    <div className="mb-8">
+      <div className="bg-white border border-emerald-200 overflow-hidden rounded-none flex flex-col md:flex-row items-stretch">
+        <div className="md:w-2/5 flex-shrink-0">
+          <img src={ceo.img} alt={`CEO - ${ceo.name}`} className="w-full h-64 md:h-full object-cover" />
+        </div>
+        <div className="p-8 md:w-3/5 text-left flex flex-col justify-center">
+          <h3 className="text-3xl font-bold text-emerald-700">{ceo.name}</h3>
+          <p className="text-emerald-600 font-semibold mt-1">{ceo.title}</p>
+          <p className="text-gray-600 mt-3">{ceo.desc}</p>
+          <div className="mt-6 flex items-center gap-3">
+            <a href={`mailto:${ceo.email}`} className="inline-flex items-center px-5 py-3 bg-emerald-600 text-white font-semibold rounded-md shadow hover:bg-emerald-700">Contact CEO</a>
+            <button className="px-5 py-3 border border-emerald-200 text-emerald-700 rounded-md">View Profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Auto-scrolling team carousel component (continuous single-direction infinite scroll)
+interface TeamMember {
+  name: string;
+  title: string;
+  phone: string;
+  email: string;
+  img: string;
+}
+
 const TeamCarousel: React.FC = () => {
-  const members = [
+  const defaultMembers: TeamMember[] = [
     { name: 'Dr. Sarah Johnson', title: 'Laboratory Director', phone: '(555) 123-4567', email: 'sarah.johnson@glowac.com', img: '/images/image4.jpg' },
     { name: 'Mike Rodriguez', title: 'Senior Geotechnical Engineer', phone: '(555) 123-4568', email: 'mike.rodriguez@glowac.com', img: '/images/image5.jpg' },
     { name: 'Jennifer Chen', title: 'Environmental Testing Manager', phone: '(555) 123-4569', email: 'jennifer.chen@glowac.com', img: '/images/image6.jpg' },
     { name: 'David Kim', title: 'Quality Assurance Manager', phone: '(555) 123-4570', email: 'david.kim@glowac.com', img: '/images/image1.jpg' },
     { name: 'Lisa Thompson', title: 'Field Operations Coordinator', phone: '(555) 123-4571', email: 'lisa.thompson@glowac.com', img: '/images/image2.jpg' },
   ];
+
+  const [members, setMembers] = useState<TeamMember[]>(defaultMembers);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('about.team');
+      if (raw) {
+        const team = JSON.parse(raw);
+        setMembers(team.length > 0 ? team : defaultMembers);
+      }
+    } catch (err) {
+      setMembers(defaultMembers);
+    }
+  }, []);
 
   // Duplicate items for seamless infinite scrolling
   const items = [...members, ...members];
