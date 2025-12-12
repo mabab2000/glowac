@@ -1,18 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // --- Request Service Cards component (moved above AboutUs to avoid runtime reference errors) ---
 export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ defaultService }) => {
   const [showModal, setShowModal] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState<{ text: string; visible: boolean } | null>(null);
+
+  useEffect(() => {
+    if (!toast || !toast.visible) return;
+    const t = setTimeout(() => setToast({ ...toast, visible: false }), 4500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     const form = new FormData(e.currentTarget as HTMLFormElement);
-    const name = form.get('name') || '';
-    const service = form.get('service') || defaultService || 'Geotechnical & Concrete Services';
-    // TODO: wire to backend API
-    alert(`Request for ${service} submitted by ${name}`);
-    (e.currentTarget as HTMLFormElement).reset();
-    setShowModal(false);
+    const name = String(form.get('name') || '');
+    const email = String(form.get('email') || '');
+    const phone = String(form.get('phone') || '');
+    const project_details = String(form.get('message') || '');
+    const service = String(form.get('service') || defaultService || 'Geotechnical & Concrete Services');
+
+    try {
+      const body = new URLSearchParams();
+      body.append('name', name);
+      body.append('email', email);
+      body.append('phone', phone);
+      body.append('project_details', project_details);
+
+      const res = await fetch('https://glowac-api.onrender.com/geotech-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', accept: 'application/json' },
+        body: body.toString(),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        let text = 'Request submitted — thank you.';
+        if (Array.isArray(data) && data.length > 0) {
+          const first = data[0];
+          if (first?.message) text = String(first.message);
+          else if (first?.id) text = `Request submitted (id ${first.id})`;
+        } else if (data?.message) {
+          text = String(data.message);
+        } else if (data?.id) {
+          text = `Request submitted (id ${data.id})`;
+        }
+        setToast({ text, visible: true });
+        (e.currentTarget as HTMLFormElement).reset();
+        setShowModal(false);
+      } else {
+        const text = data?.message || 'Failed to submit request.';
+        setToast({ text, visible: true });
+      }
+    } catch (err) {
+      setToast({ text: 'Network error — please try again.', visible: true });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -61,7 +110,7 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
               <input type="hidden" name="service" value={defaultService ?? "Geotechnical & Concrete Services"} />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -89,8 +138,18 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
                 >
                   Cancel
                 </button>
-                <button type="submit" className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700">
-                  Send Request
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (submitting) return;
+                    const f: any = formRef.current;
+                    if (f?.requestSubmit) f.requestSubmit();
+                    else if (f) f.submit();
+                  }}
+                  disabled={submitting}
+                  className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
+                >
+                  {submitting ? 'Sending…' : 'Send Request'}
                 </button>
               </div>
             </form>
@@ -184,7 +243,7 @@ const AboutUs: React.FC = () => {
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
         {/* Main content */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-          {/* Left: Company description */}
+          {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
           <div className="space-y-6">
             <h3 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
               Our Commitment to Excellence
@@ -195,16 +254,9 @@ const AboutUs: React.FC = () => {
             <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
               Besides training, experience and knowledge of the GLOWAC team members, their values are merged to reflect the following criteria for business success.
             </p>
-            
-            {/* CTA Button */}
-            <div className="pt-6">
-              <button className="inline-flex items-center px-8 py-4 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-                Learn More About Us
-                <svg className="ml-3 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
-            </div>
+            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
+              Our focus on quality, instrumentation, and adherence to recognised standards ensures reliable results for engineers, contractors, and researchers.
+            </p>
           </div>
 
           {/* Right: Working Hours Timeline */}
@@ -238,13 +290,7 @@ const AboutUs: React.FC = () => {
               ))}
             </div>
             
-            {/* Current Status */}
-            <div className="mt-6 p-4 bg-teal-500 text-white rounded-lg text-center">
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                <span className="font-semibold">Currently Available</span>
-              </div>
-            </div>
+           
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Footer: React.FC = () => {
   return (
@@ -34,21 +34,10 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Services Section */}
+          {/* Services Section (populated from API) */}
           <div>
             <h3 className="text-2xl font-bold text-white mb-6">Services</h3>
-            <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-emerald-200 hover:text-white transition-colors duration-300">
-                  Geotechnical Tests
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-emerald-200 hover:text-white transition-colors duration-300">
-                  Other Services
-                </a>
-              </li>
-            </ul>
+            <ServiceList />
           </div>
 
           {/* Contacts Section */}
@@ -56,7 +45,7 @@ const Footer: React.FC = () => {
             <h3 className="text-2xl font-bold text-white mb-6">Contacts</h3>
             <div className="space-y-3">
               <p className="text-emerald-200">
-                Rwanda - Kigali City 24 KG 607 St
+                Avenue des Poids Lourds, KN7 ROAD, DR71, Muhima, Nyarugenge
               </p>
               <p className="text-teal-200">
                 Phone: +250 788 764 432
@@ -92,3 +81,67 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
+
+// Services list component (fetches main services from API)
+const ServiceList: React.FC = () => {
+  interface Service { id: number | string; name: string; slug?: string }
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    fetch('https://glowac-api.onrender.com/main-services', { headers: { accept: 'application/json' } })
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (Array.isArray(data)) {
+          const mapped = data.map((d: any) => ({ id: d.id ?? d._id ?? d.slug ?? '', name: d.name ?? d.title ?? 'Service', slug: d.slug }));
+          setServices(mapped);
+        } else {
+          setServices([]);
+        }
+      })
+      .catch(() => {
+        if (mounted) setServices([]);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <ul className="space-y-3">
+        {[1, 2, 3].map((n) => (
+          <li key={n} className="animate-pulse">
+            <div className="h-4 bg-emerald-600/30 rounded w-3/4" />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (services.length === 0) {
+    return <p className="text-emerald-200">No services available.</p>;
+  }
+
+  return (
+    <ul className="space-y-3">
+      {services.map((s) => (
+        <li key={String(s.id)}>
+          <a href={`/services/${s.id}`} className="text-emerald-200 hover:text-white transition-colors duration-300">
+            {s.name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+};

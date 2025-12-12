@@ -10,8 +10,9 @@ const UpdateHeader: React.FC = () => {
             <Link to="homeupdate" className="text-sm font-medium text-gray-700 hover:text-emerald-700">HomeUpdate</Link>
             <Link to="aboutupdate" className="text-sm font-medium text-gray-700 hover:text-emerald-700">AboutUpdate</Link>
             <Link to="serviceupdate" className="text-sm font-medium text-gray-700 hover:text-emerald-700">ServiceUpdate</Link>
+            <Link to="messageupdate" className="text-sm font-medium text-gray-700 hover:text-emerald-700">messageupdate</Link>
           </div>
-          <div className="text-sm text-gray-500">Update Mode</div>
+          
         </div>
       </div>
     </nav>

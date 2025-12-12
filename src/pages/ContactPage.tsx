@@ -1,6 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const ContactPage: React.FC = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState<{ text: string; visible: boolean } | null>(null);
+
+  useEffect(() => {
+    if (!toast || !toast.visible) return;
+    const t = setTimeout(() => setToast({ ...toast, visible: false }), 4500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const body = new URLSearchParams();
+      body.append('name', name);
+      body.append('email', email);
+      body.append('message', message);
+
+      const res = await fetch('https://glowac-api.onrender.com/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', accept: 'application/json' },
+        body: body.toString(),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const text = data?.message || 'Message sent successfully.';
+        setToast({ text, visible: true });
+        setName('');
+        setEmail('');
+        setMessage('');
+      } else {
+        const text = data?.message || 'Failed to send message.';
+        setToast({ text, visible: true });
+      }
+    } catch (err) {
+      setToast({ text: 'Network error — please try again.', visible: true });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <main className="pt-28 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,7 +76,7 @@ const ContactPage: React.FC = () => {
             <div className="space-y-6">
               <div className="bg-white rounded-xl p-6 shadow border border-gray-200">
                 <h3 className="text-xl font-semibold mb-3">Contact Information</h3>
-                <p className="text-gray-700">Address: Rwanda - Kigali City, 24 KG 607 St</p>
+                <p className="text-gray-700">Address: Avenue des Poids Lourds, KN7 ROAD, DR71, Muhima, Nyarugenge</p>
                 <p className="text-gray-700">Phone: <a className="text-teal-600" href="tel:+250788764432">+250 788 764 432</a></p>
                 <p className="text-gray-700">Email: <a className="text-teal-600" href="mailto:info@glowac.rw">info@glowac.rw</a></p>
               </div>
@@ -51,24 +96,35 @@ const ContactPage: React.FC = () => {
           {/* Full-width message form card */}
           <div className="mt-8 bg-white rounded-xl p-6 shadow border border-gray-200">
             <h3 className="text-xl font-semibold mb-3">Send us a message</h3>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Name</label>
-                <input placeholder="Your full name" className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Email</label>
-                <input placeholder="your@email.com" className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+                <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Message</label>
-                <textarea placeholder="Briefly describe your project or question..." className="mt-1 block w-full border border-gray-300 rounded-md p-2" rows={6} />
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Briefly describe your project or question..." className="mt-1 block w-full border border-gray-300 rounded-md p-2" rows={6} />
               </div>
               <div className="flex justify-end">
-                <button className="px-4 py-2 bg-teal-600 text-white rounded-md">Send Message</button>
+                <button type="submit" disabled={submitting} className="px-4 py-2 bg-teal-600 text-white rounded-md disabled:opacity-50">
+                  {submitting ? 'Sending…' : 'Send Message'}
+                </button>
               </div>
             </form>
           </div>
+
+          {/* Toast */}
+          {toast && toast.visible && (
+            <div className="fixed right-6 bottom-6 z-50 w-80">
+              <div className="bg-emerald-600 text-white rounded-md shadow-lg p-4">
+                <div className="font-medium">{toast.text}</div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

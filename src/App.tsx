@@ -7,6 +7,7 @@ import ScrollProgressCircle from './components/ScrollProgressCircle';
 import AboutPage from './pages/AboutPage';
 import AboutPreview from './components/AboutPreview';
 import AboutUs from './components/AboutUs';
+import MessageUpdate from './pages/update/MessageUpdate';
 import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import UpdatePage from './pages/UpdatePage';
@@ -67,6 +68,7 @@ function RouterLayout() {
           <Route path="homeupdate" element={<HomeUpdate />} />
           <Route path="aboutupdate" element={<AboutUpdate />} />
           <Route path="serviceupdate" element={<ServiceUpdate />} />
+          <Route path="messageupdate" element={<MessageUpdate />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

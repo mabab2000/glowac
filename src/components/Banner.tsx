@@ -77,23 +77,7 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
   const [editingId, setEditingId] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    const start = () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
-      intervalRef.current = window.setInterval(() => {
-        if (!hoverRef.current && playing) {
-          setIsTransitioning(true);
-          setTimeout(() => {
-            setCurrent((v) => (v + 1) % (slidesToRender.length));
-            setIsTransitioning(false);
-          }, 300);
-        }
-      }, 5000);
-    };
-    start();
-    return () => { if (intervalRef.current) window.clearInterval(intervalRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, apiBanners]);
+  
 
   // Fetch API banners on mount
   useEffect(() => {
@@ -103,7 +87,10 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
       .then(res => res.json())
       .then((data) => {
         if (!mounted) return;
-        if (Array.isArray(data)) setApiBanners(data as ApiBanner[]);
+        if (Array.isArray(data)) {
+          setApiBanners(data as ApiBanner[]);
+          setCurrent(0);
+        }
       })
       .catch(() => setApiError('Failed to fetch banners'))
       .finally(() => { if (mounted) setApiLoading(false); });
@@ -115,8 +102,33 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
     if (apiBanners && apiBanners.length > 0) {
       return apiBanners.map(b => ({ image: b.image_preview_url, title: b.title, subtitle: '', highlight: b.highlight_tag, description: b.description, cta: '' }));
     }
-    return slides;
-  }, [apiBanners, slides]);
+    return [];
+  }, [apiBanners]);
+
+  // interval that advances slides. declared after slidesToRender so we can safely reference its length
+  useEffect(() => {
+    const start = () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      intervalRef.current = window.setInterval(() => {
+        const len = slidesToRender.length;
+        if (len <= 0) return; // guard against modulo by zero
+        if (!hoverRef.current && playing) {
+          setIsTransitioning(true);
+          setTimeout(() => {
+            setCurrent((v) => {
+              if (typeof v !== 'number' || Number.isNaN(v)) return 0;
+              return (v + 1) % len;
+            });
+            setIsTransitioning(false);
+          }, 300);
+        }
+      }, 5000);
+    };
+    start();
+    return () => { if (intervalRef.current) window.clearInterval(intervalRef.current); };
+  }, [playing, apiBanners, slidesToRender.length]);
+
+  // (Render decisions for public view are handled after hooks to preserve hook order)
 
   // preload images and update imageStatus
   useEffect(() => {
@@ -165,21 +177,66 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
   const isLoading = imageStatus.length === slidesToRender.length && imageStatus.some(v => v === undefined) && !allFailed;
   if (allFailed) return null;
 
+  // Public view behavior: show spinner while API is loading; hide section if no banners returned or fetch failed
+  if (!admin) {
+    if (apiLoading) {
+      return (
+        <section className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-20 lg:py-28 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center">
+            <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col items-center">
+                <h2 className="text-4xl sm:text-5xl font-extrabold tracking-widest uppercase drop-shadow-lg">GLOWAC</h2>
+                <div className="mt-2 h-1 w-28 bg-white/30 rounded-full" />
+              </div>
+
+              <svg className="animate-spin h-20 w-20 text-emerald-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+
+              <div className="text-center">
+                <p className="mt-2 text-lg sm:text-xl font-medium text-white/95">Loading</p>
+                <div className="mt-1 text-white/80">
+                  <span className="animate-pulse">.</span>
+                  <span className="animate-pulse delay-75">.</span>
+                  <span className="animate-pulse delay-150">.</span>
+                </div>
+                <p className="mt-3 text-white/80">Preparing images and visuals — this may take a moment.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    if (!apiBanners || apiBanners.length === 0) return null;
+  }
+
   const onMouseEnter = () => { hoverRef.current = true; };
   const onMouseLeave = () => { hoverRef.current = false; };
 
   const nextSlide = () => {
+    const len = slidesToRender.length;
+    if (len <= 0) return;
     setIsTransitioning(true);
     setTimeout(() => {
-      setCurrent((v) => (v + 1) % slidesToRender.length);
+      setCurrent((v) => {
+        if (typeof v !== 'number' || Number.isNaN(v)) return 0;
+        return (v + 1) % len;
+      });
       setIsTransitioning(false);
     }, 300);
   };
 
   const prevSlide = () => {
+    const len = slidesToRender.length;
+    if (len <= 0) return;
     setIsTransitioning(true);
     setTimeout(() => {
-      setCurrent((v) => (v - 1 + slidesToRender.length) % slidesToRender.length);
+      setCurrent((v) => {
+        if (typeof v !== 'number' || Number.isNaN(v)) return 0;
+        return (v - 1 + len) % len;
+      });
       setIsTransitioning(false);
     }, 300);
   };

@@ -153,10 +153,12 @@ const CEOCard: React.FC = () => {
 const AboutPage: React.FC = () => {
   const [aboutTitle, setAboutTitle] = useState<string>('About Us');
   const [backgrounds, setBackgrounds] = useState<{ id: number; paragraph: string }[]>([]);
+  const [bgLoading, setBgLoading] = useState(true);
   useEffect(() => {
     const v = localStorage.getItem('about.headerTitle');
     if (v) setAboutTitle(v);
     let mounted = true;
+    setBgLoading(true);
     fetch('https://glowac-api.onrender.com/background', { headers: { accept: 'application/json' } })
       .then((res) => {
         if (!res.ok) throw new Error('Network response was not ok');
@@ -168,48 +170,45 @@ const AboutPage: React.FC = () => {
       })
       .catch(() => {
         // keep fallback static text on error
-      });
+      })
+      .finally(() => { if (mounted) setBgLoading(false); });
     return () => {
       mounted = false;
     };
   }, []);
 
   return (
-    <main className="pt-28">
+    <main className="pt-24">
       {/* Full-bleed dashed area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-3">
         <div className="w-full lg:max-w-4xl mx-auto">
-            <div className="bg-emerald-100 rounded-none text-center p-8 mt-12">
-            <h1 className="text-3xl font-bold text-emerald-600 mb-4">{aboutTitle}</h1>
+            <div className="bg-emerald-100 rounded-none text-center p-3 mt-0">
+            <h1 className="text-3xl font-bold text-emerald-600 mb-2">{aboutTitle}</h1>
             <div className="w-20 h-1 bg-emerald-600 mx-auto" />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-0">
         {/* Background section */}
-        <section className="mt-12">
+        <section className="mt-0">
           <div className="w-full lg:max-w-4xl mx-auto">
             <div className="p-8 rounded-none shadow-sm text-justify">
             <h2 className="text-2xl font-semibold text-bold-700 mb-3">Background</h2>
             <div className="text-gray-700 leading-relaxed space-y-4">
-              {backgrounds.length > 0 ? (
+              {bgLoading ? (
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-3/4 animate-pulse" />
+                  <div className="h-6 bg-gray-200 rounded w-full animate-pulse" />
+                  <div className="h-6 bg-gray-200 rounded w-5/6 animate-pulse" />
+                </div>
+              ) : (backgrounds.length > 0 ? (
                 backgrounds.map((b) => (
                   <p key={b.id} className="break-words">{b.paragraph}</p>
                 ))
               ) : (
-                <>
-                  <p>
-                    GLOWAC Laboratory has been providing geotechnical and materials testing services with a focus on dependable, accurate results and strong customer service for over two decades. Our laboratory combines experienced personnel with modern equipment and standardized methods to support construction, engineering and research projects across the region.
-                  </p>
-                  <p>
-                    Founded with the vision of delivering reliable geotechnical solutions, GLOWAC has grown to become a trusted partner for engineers, contractors, and developers throughout the industry. Our comprehensive testing capabilities encompass soil mechanics, concrete testing, aggregate analysis, and specialized materials evaluation, ensuring that every project receives the precise technical support it requires.
-                  </p>
-                  <p>
-                    Our state-of-the-art laboratory facility is equipped with cutting-edge instrumentation and maintained to the highest standards. We continuously invest in advanced testing equipment and technology to stay at the forefront of geotechnical testing methodologies. This commitment to technological excellence enables us to provide faster turnaround times without compromising the accuracy and reliability of our results.
-                  </p>
-                </>
-              )}
+                <p>No background information available at this time.</p>
+              ))}
             </div>
             </div>
           </div>
@@ -217,7 +216,7 @@ const AboutPage: React.FC = () => {
 
         {/* Quality Policy card */}
         {/* Interactive Core Values / Mission / Version section (not cards) */}
-        <section className="mt-8">
+        <section className="mt-2">
           <div className="w-full lg:max-w-4xl mx-auto">
             <InteractivePolicy />
           </div>
@@ -226,30 +225,23 @@ const AboutPage: React.FC = () => {
         {/* Environmental Lab section */}
         <section className="mt-12">
           <div className="w-full lg:max-w-4xl mx-auto">
-            <div className="p-8 rounded-none border border-emerald-200 bg-emerald-50">
+            <div className="p-8 rounded-none border border-emerald-200 bg-white shadow-sm">
               <h2 className="text-2xl font-semibold text-emerald-700 mb-6 text-center">ENVIRONMENTAL LAB</h2>
               
               <div className="mb-6">
                 <ImageGallery />
               </div>
               
-              <div className="text-gray-800 text-justify space-y-4">
-                <p className="font-semibold leading-relaxed">
-                  Glowac's purpose built environmental labs pride itself in continuously innovating and driving value for customers by embracing state of the art technologies.
-                </p>
-                <p className="font-semibold leading-relaxed">
-                  Our environmental laboratories provide a comprehensive range of soil, aggregate, concrete and water testing services for a variety of industry sectors from our specialist testing facilities.
-                </p>
-              </div>
+             
             </div>
           </div>
         </section>
 
         {/* Contact Our Team section */}
-        <section className="mt-12">
+        <section className="mt-6">
           <div className="w-full lg:max-w-4xl mx-auto">
             <div className="p-8 rounded-none">
-                  <h2 className="text-2xl font-semibold text-emerald-700 mb-8 text-center">CONTACT OUR TEAM</h2>
+                  <h2 className="text-4xl font-bold mb-8 text-center">CONTACT OUR TEAM</h2>
 
                           <CEOCard />
 
@@ -257,7 +249,7 @@ const AboutPage: React.FC = () => {
                     <TeamCarousel />
                     <div className="mt-8 text-center">
                     <p className="text-gray-700 font-medium">
-                      For general inquiries: <span className="text-emerald-700">info@glowac.com</span> | <span className="text-emerald-700">(555) 123-4500</span>
+                      For general inquiries: <span className="text-emerald-700">info@glowac.com</span> | <span className="text-emerald-700">+250 788 764 432</span>
                     </p>
                   </div>
                 </div>
@@ -280,15 +272,7 @@ interface TeamMember {
 }
 
 const TeamCarousel: React.FC = () => {
-  const defaultMembers: TeamMember[] = [
-    { name: 'Dr. Sarah Johnson', title: 'Laboratory Director', phone: '(555) 123-4567', email: 'sarah.johnson@glowac.com', img: '/images/image4.jpg' },
-    { name: 'Mike Rodriguez', title: 'Senior Geotechnical Engineer', phone: '(555) 123-4568', email: 'mike.rodriguez@glowac.com', img: '/images/image5.jpg' },
-    { name: 'Jennifer Chen', title: 'Environmental Testing Manager', phone: '(555) 123-4569', email: 'jennifer.chen@glowac.com', img: '/images/image6.jpg' },
-    { name: 'David Kim', title: 'Quality Assurance Manager', phone: '(555) 123-4570', email: 'david.kim@glowac.com', img: '/images/image1.jpg' },
-    { name: 'Lisa Thompson', title: 'Field Operations Coordinator', phone: '(555) 123-4571', email: 'lisa.thompson@glowac.com', img: '/images/image2.jpg' },
-  ];
-
-  const [members, setMembers] = useState<TeamMember[]>(defaultMembers);
+  const [members, setMembers] = useState<TeamMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
 
   useEffect(() => {
@@ -301,7 +285,7 @@ const TeamCarousel: React.FC = () => {
       })
       .then((data) => {
         if (!mounted) return;
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           const mapped = data.map((m: any) => ({
             name: m.name || '',
             title: m.title || '',
@@ -309,12 +293,14 @@ const TeamCarousel: React.FC = () => {
             email: m.email || '',
             img: m.image_url || '/images/image4.jpg',
           }));
-          setMembers(mapped.length > 0 ? mapped : defaultMembers);
+          setMembers(mapped);
+        } else {
+          setMembers([]);
         }
       })
       .catch(() => {
-        // keep defaults on error
-        setMembers(defaultMembers);
+        // on error, show empty list (no default data)
+        if (mounted) setMembers([]);
       })
       .finally(() => {
         if (mounted) setLoadingMembers(false);
@@ -335,6 +321,7 @@ const TeamCarousel: React.FC = () => {
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
+    if (members.length === 0) return; // don't start animation for empty list
 
     const speed = 40; // pixels per second
 
@@ -356,7 +343,25 @@ const TeamCarousel: React.FC = () => {
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
-  }, []);
+  }, [members.length]);
+
+  if (loadingMembers) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="bg-white border border-emerald-200 rounded-none p-4 animate-pulse">
+            <div className="w-full h-40 bg-gray-200 mb-4" />
+            <div className="h-6 bg-gray-200 w-3/4 mb-2" />
+            <div className="h-4 bg-gray-200 w-1/2" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (members.length === 0) {
+    return <p className="text-sm text-gray-500">No team members available.</p>;
+  }
 
   return (
     <div className="overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0"
