@@ -18,7 +18,6 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (submitting) return;
-    setSubmitting(true);
     const form = new FormData(e.currentTarget as HTMLFormElement);
     const name = String(form.get('name') || '');
     const email = String(form.get('email') || '');
@@ -139,13 +138,7 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
                   Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={() => {
-                    if (submitting) return;
-                    const f: any = formRef.current;
-                    if (f?.requestSubmit) f.requestSubmit();
-                    else if (f) f.submit();
-                  }}
+                  type="submit"
                   disabled={submitting}
                   className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
                 >

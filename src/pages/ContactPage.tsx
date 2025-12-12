@@ -109,8 +109,23 @@ const ContactPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">Message</label>
                 <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Briefly describe your project or question..." className="mt-1 block w-full border border-gray-300 rounded-md p-2" rows={6} />
               </div>
-              <div className="flex justify-end">
-                <button type="submit" disabled={submitting} className="px-4 py-2 bg-teal-600 text-white rounded-md disabled:opacity-50">
+              <div className="flex justify-end space-x-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setName('');
+                    setEmail('');
+                    setMessage('');
+                  }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
+                >
                   {submitting ? 'Sending…' : 'Send Message'}
                 </button>
               </div>

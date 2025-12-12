@@ -17,7 +17,9 @@ const Header: React.FC = () => {
   const [currentSubServices, setCurrentSubServices] = useState<SubService[]>([]);
   const [currentMainId, setCurrentMainId] = useState<number | null>(null);
   const subServicesCache = useRef<Record<number, SubService[]>>({});
-  const [mobileServicesOpen, setMobileServicesOpen] = useState(false); // mobile submenu
+  // Track which mobile main service is open (by id), not just true/false
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false); // mobile submenu open
+  const [mobileSelectedMain, setMobileSelectedMain] = useState<number | null>(null);
 
   const links = [
     { href: '/', label: 'HOME' },
@@ -31,6 +33,20 @@ const Header: React.FC = () => {
   const locPath = location.pathname.replace(/(^\/|\/$)/g, '');
   const locSegments = locPath.split('/');
   const isServiceDetail = locSegments[0] === 'services' && locSegments.length > 1 && locSegments.slice(1).join('/') !== '';
+
+  // auto-close menus when route changes (close header on navigation)
+  useEffect(() => {
+    setOpen(false);
+    setMobileServicesOpen(false);
+    setServicesOpen(false);
+    setSelectedService(null);
+  }, [location.pathname]);
+
+  // when mobile menu opens, show services submenu by default
+  useEffect(() => {
+    if (open) setMobileServicesOpen(true);
+    else setMobileServicesOpen(false);
+  }, [open]);
 
   // close dropdown when clicking outside (ref wraps the button + menu)
   useEffect(() => {
@@ -72,7 +88,8 @@ const Header: React.FC = () => {
     <header className="fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-0">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
-          <div className="bg-gray-200 border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md py-0">
+          {/* bg-black and text-white only on mobile (lg:hidden), keep original on desktop */}
+          <div className="border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md py-0 bg-white lg:bg-gray-200 lg:text-black">
           <div className="px-0 py-0">
           <div className="grid grid-cols-3 items-stretch gap-4 h-20 md:h-24 lg:h-16">
             
@@ -226,12 +243,14 @@ const Header: React.FC = () => {
 
             {/* Right: mobile toggle only */}
             <div className="flex items-center justify-end h-full">
+              {/* Only show toggle on mobile */}
               <button
                 onClick={() => setOpen(v => !v)}
-                className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-200 hover:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
                 aria-controls="mobile-menu"
                 aria-expanded={open}
                 aria-label={open ? 'Close menu' : 'Open menu'}
+                style={{ display: 'block' }}
               >
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                   {open ? (
@@ -251,7 +270,8 @@ const Header: React.FC = () => {
     </div>
 
       {/* Mobile Navigation Panel */}
-      <div id="mobile-menu" className={`${open ? 'block' : 'hidden'} lg:hidden bg-gray-900/95 border-t border-gray-700`}>
+      {/* Only mobile menu gets black bg and white text */}
+      <div id="mobile-menu" className={`${open ? 'block' : 'hidden'} lg:hidden bg-white border-t border-gray-200`}>
         <div className="px-4 pt-4 pb-6 space-y-2">
           <div className="mx-auto w-[95%]">
             <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
@@ -260,7 +280,7 @@ const Header: React.FC = () => {
                   // On a specific service detail page hide the mobile dropdown and show a simple link
                   if (isServiceDetail) {
                     return (
-                      <Link key={link.href} to={link.href} className="px-3 py-3 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md text-base font-medium tracking-wide transition-colors duration-200 flex items-center gap-2 whitespace-nowrap">
+                      <Link key={link.href} to={link.href} onClick={() => setOpen(false)} className="px-3 py-3 text-gray-700 hover:text-teal-400 hover:bg-gray-100 rounded-md text-base font-medium tracking-wide transition-colors duration-200 flex items-center gap-2 whitespace-nowrap">
                         <span>{link.label}</span>
                       </Link>
                     );
@@ -269,7 +289,7 @@ const Header: React.FC = () => {
                     <div key={link.href} className="flex flex-col">
                       <button
                         onClick={() => setMobileServicesOpen(v => !v)}
-                        className="w-full flex items-center justify-between px-3 py-3 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md text-base font-medium tracking-wide transition-colors duration-200"
+                        className="w-full flex items-center justify-between px-3 py-3 text-gray-700 hover:text-teal-400 hover:bg-gray-100 rounded-md text-base font-medium tracking-wide transition-colors duration-200"
                         aria-expanded={mobileServicesOpen}
                         aria-controls="mobile-services-submenu"
                       >
@@ -292,7 +312,44 @@ const Header: React.FC = () => {
                           mainServices.map(m => {
                             const slug = m.service_name.toLowerCase().replace(/\s+/g, '-');
                             return (
-                              <Link key={m.id} to={`/services/${slug}`} className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">{m.service_name}</Link>
+                              <div key={m.id} className="flex flex-col">
+                                <button
+                                  onClick={async () => {
+                                    if (mobileSelectedMain === m.id) {
+                                      setMobileSelectedMain(null);
+                                      return;
+                                    }
+                                    setMobileSelectedMain(m.id);
+                                    if (!subServicesCache.current[m.id]) {
+                                      try {
+                                        const res = await fetch(`https://glowac-api.onrender.com/sub-services/by-main/${m.id}`, { headers: { Accept: 'application/json' } });
+                                        if (!res.ok) return;
+                                        const data = await res.json();
+                                        if (!Array.isArray(data)) return;
+                                        const mapped = data.map((r: any) => ({ id: Number(r.id), main_service_id: Number(r.main_service_id ?? m.id), service_name: String(r.service_name ?? ''), description: typeof r.description === 'string' ? r.description : undefined }));
+                                        subServicesCache.current[m.id] = mapped;
+                                      } catch (err) {
+                                        console.debug('Header: failed to load mobile sub-services', err);
+                                      }
+                                    }
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-gray-700 hover:text-teal-400 hover:bg-gray-100 rounded-md font-medium"
+                                >
+                                  {m.service_name}
+                                </button>
+
+                                {mobileSelectedMain === m.id && (
+                                  <div className="pl-4 mt-1 flex flex-col gap-1">
+                                    {(!subServicesCache.current[m.id] || subServicesCache.current[m.id].length === 0) ? (
+                                      <div className="px-3 py-2 text-sm text-gray-500">No sub-services found</div>
+                                    ) : (
+                                      subServicesCache.current[m.id].map(s => (
+                                        <Link key={s.id} to={`/services/${slug}/${s.service_name.toLowerCase().replace(/\s+/g,'-')}`} onClick={() => setOpen(false)} className="px-3 py-2 text-gray-700 hover:text-teal-400 hover:bg-gray-100 rounded-md text-sm">{s.service_name}</Link>
+                                      ))
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             );
                           })
                         )}
@@ -305,7 +362,8 @@ const Header: React.FC = () => {
                   <Link 
                     key={link.href} 
                     to={link.href} 
-                    className="px-3 py-3 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md text-base font-medium tracking-wide transition-colors duration-200 flex items-center gap-2 whitespace-nowrap"
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-3 text-gray-700 hover:text-teal-400 hover:bg-gray-100 rounded-md text-base font-medium tracking-wide transition-colors duration-200 flex items-center gap-2 whitespace-nowrap"
                   >
                     {/* mobile icons */}
                     {link.label === 'HOME' && (
