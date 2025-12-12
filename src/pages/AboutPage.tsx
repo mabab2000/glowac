@@ -71,11 +71,107 @@ const InteractivePolicy: React.FC = () => {
   );
 };
 
+// CEO Card component (renders API-backed CEO data)
+const CEOCard: React.FC = () => {
+  const [ceo, setCeo] = useState({ name: 'Dr. John Smith', title: 'Chief Executive Officer', email: 'ceo@glowac.com', img: '/images/image3.jpg', desc: 'Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.' });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    fetch('https://glowac-api.onrender.com/ceo', { headers: { accept: 'application/json' } })
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (Array.isArray(data) && data.length > 0) {
+          const item = data[0];
+          setCeo({
+            name: item.name || 'Dr. John Smith',
+            title: item.title || 'Chief Executive Officer',
+            email: item.email || 'ceo@glowac.com',
+            img: item.image_url || '/images/image3.jpg',
+            desc: item.short_description || 'Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.'
+          });
+        }
+      })
+      .catch(() => {
+        // keep fallback defaults
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return (
+    <div className="mb-8">
+      <div className="bg-white border border-emerald-200 overflow-hidden rounded-none flex flex-col md:flex-row items-stretch">
+        {loading ? (
+          <div className="w-full flex flex-col md:flex-row items-center md:items-stretch gap-6 p-6">
+            <div className="md:w-2/5 flex-shrink-0">
+              <div className="w-full h-64 md:h-full bg-gray-200 animate-pulse" />
+            </div>
+            <div className="p-4 md:w-3/5 text-left">
+              <div className="h-8 bg-gray-200 rounded w-1/2 mb-3 animate-pulse" />
+              <div className="h-5 bg-gray-200 rounded w-1/3 mb-4 animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse" />
+                <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+              </div>
+              <div className="mt-6 flex items-center gap-3">
+                <div className="h-10 w-36 bg-gray-200 rounded animate-pulse" />
+                <div className="h-10 w-28 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="md:w-2/5 flex-shrink-0">
+              <img src={ceo.img} alt={`CEO - ${ceo.name}`} className="w-full h-64 md:h-full object-cover" />
+            </div>
+            <div className="p-8 md:w-3/5 text-left flex flex-col justify-center">
+              <h3 className="text-3xl font-bold text-emerald-700">{ceo.name}</h3>
+              <p className="text-emerald-600 font-semibold mt-1">{ceo.title}</p>
+              <p className="text-gray-600 text-justify mt-3">{ceo.desc}</p>
+              <div className="mt-6 flex items-center gap-3">
+               
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const AboutPage: React.FC = () => {
   const [aboutTitle, setAboutTitle] = useState<string>('About Us');
+  const [backgrounds, setBackgrounds] = useState<{ id: number; paragraph: string }[]>([]);
   useEffect(() => {
     const v = localStorage.getItem('about.headerTitle');
     if (v) setAboutTitle(v);
+    let mounted = true;
+    fetch('https://glowac-api.onrender.com/background', { headers: { accept: 'application/json' } })
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (Array.isArray(data)) setBackgrounds(data);
+      })
+      .catch(() => {
+        // keep fallback static text on error
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
@@ -97,16 +193,23 @@ const AboutPage: React.FC = () => {
             <div className="p-8 rounded-none shadow-sm text-justify">
             <h2 className="text-2xl font-semibold text-bold-700 mb-3">Background</h2>
             <div className="text-gray-700 leading-relaxed space-y-4">
-              <p>
-                GLOWAC Laboratory has been providing geotechnical and materials testing services with a focus on dependable, accurate results and strong customer service for over two decades. Our laboratory combines experienced personnel with modern equipment and standardized methods to support construction, engineering and research projects across the region.
-              </p>
-              <p>
-                Founded with the vision of delivering reliable geotechnical solutions, GLOWAC has grown to become a trusted partner for engineers, contractors, and developers throughout the industry. Our comprehensive testing capabilities encompass soil mechanics, concrete testing, aggregate analysis, and specialized materials evaluation, ensuring that every project receives the precise technical support it requires.
-              </p>
-              <p>
-                Our state-of-the-art laboratory facility is equipped with cutting-edge instrumentation and maintained to the highest standards. We continuously invest in advanced testing equipment and technology to stay at the forefront of geotechnical testing methodologies. This commitment to technological excellence enables us to provide faster turnaround times without compromising the accuracy and reliability of our results.
-              </p>
-             
+              {backgrounds.length > 0 ? (
+                backgrounds.map((b) => (
+                  <p key={b.id} className="break-words">{b.paragraph}</p>
+                ))
+              ) : (
+                <>
+                  <p>
+                    GLOWAC Laboratory has been providing geotechnical and materials testing services with a focus on dependable, accurate results and strong customer service for over two decades. Our laboratory combines experienced personnel with modern equipment and standardized methods to support construction, engineering and research projects across the region.
+                  </p>
+                  <p>
+                    Founded with the vision of delivering reliable geotechnical solutions, GLOWAC has grown to become a trusted partner for engineers, contractors, and developers throughout the industry. Our comprehensive testing capabilities encompass soil mechanics, concrete testing, aggregate analysis, and specialized materials evaluation, ensuring that every project receives the precise technical support it requires.
+                  </p>
+                  <p>
+                    Our state-of-the-art laboratory facility is equipped with cutting-edge instrumentation and maintained to the highest standards. We continuously invest in advanced testing equipment and technology to stay at the forefront of geotechnical testing methodologies. This commitment to technological excellence enables us to provide faster turnaround times without compromising the accuracy and reliability of our results.
+                  </p>
+                </>
+              )}
             </div>
             </div>
           </div>
@@ -148,26 +251,7 @@ const AboutPage: React.FC = () => {
             <div className="p-8 rounded-none">
                   <h2 className="text-2xl font-semibold text-emerald-700 mb-8 text-center">CONTACT OUR TEAM</h2>
 
-                  {/* Featured CEO card (full-width, large image) */}
-                  <div className="mb-8">
-                    <div className="bg-white border border-emerald-200 overflow-hidden rounded-none flex flex-col md:flex-row items-stretch">
-                      {/* Image: stacked on mobile, left 40% on md+ */}
-                      <div className="md:w-2/5 flex-shrink-0">
-                        <img src="/images/image3.jpg" alt="CEO - Dr. John Smith" className="w-full h-64 md:h-full object-cover" />
-                      </div>
-
-                      {/* Content: right 60% on md+ */}
-                      <div className="p-8 md:w-3/5 text-left flex flex-col justify-center">
-                        <h3 className="text-3xl font-bold text-emerald-700">Dr. John Smith</h3>
-                        <p className="text-emerald-600 font-semibold mt-1">Chief Executive Officer</p>
-                        <p className="text-gray-600 mt-3">Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.</p>
-                        <div className="mt-6 flex items-center gap-3">
-                          <a href="mailto:ceo@glowac.com" className="inline-flex items-center px-5 py-3 bg-emerald-600 text-white font-semibold rounded-md shadow hover:bg-emerald-700">Contact CEO</a>
-                          <button className="px-5 py-3 border border-emerald-200 text-emerald-700 rounded-md">View Profile</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                          <CEOCard />
 
                     {/* Auto-scrolling team carousel */}
                     <TeamCarousel />
@@ -185,39 +269,6 @@ const AboutPage: React.FC = () => {
 };
 
 export default AboutPage;
-
-// CEO Card component
-const CEOCard: React.FC = () => {
-  const [ceo, setCeo] = useState({ name: 'Dr. John Smith', title: 'Chief Executive Officer', email: 'ceo@glowac.com', img: '/images/image3.jpg', desc: 'Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.' });
-
-  useEffect(() => {
-    const name = localStorage.getItem('about.ceo.name') || 'Dr. John Smith';
-    const title = localStorage.getItem('about.ceo.title') || 'Chief Executive Officer';
-    const email = localStorage.getItem('about.ceo.email') || 'ceo@glowac.com';
-    const img = localStorage.getItem('about.ceo.img') || '/images/image3.jpg';
-    const desc = localStorage.getItem('about.ceo.desc') || 'Head of the GLOWAC team — overseeing laboratory operations, quality, and strategic direction.';
-    setCeo({ name, title, email, img, desc });
-  }, []);
-
-  return (
-    <div className="mb-8">
-      <div className="bg-white border border-emerald-200 overflow-hidden rounded-none flex flex-col md:flex-row items-stretch">
-        <div className="md:w-2/5 flex-shrink-0">
-          <img src={ceo.img} alt={`CEO - ${ceo.name}`} className="w-full h-64 md:h-full object-cover" />
-        </div>
-        <div className="p-8 md:w-3/5 text-left flex flex-col justify-center">
-          <h3 className="text-3xl font-bold text-emerald-700">{ceo.name}</h3>
-          <p className="text-emerald-600 font-semibold mt-1">{ceo.title}</p>
-          <p className="text-gray-600 mt-3">{ceo.desc}</p>
-          <div className="mt-6 flex items-center gap-3">
-            <a href={`mailto:${ceo.email}`} className="inline-flex items-center px-5 py-3 bg-emerald-600 text-white font-semibold rounded-md shadow hover:bg-emerald-700">Contact CEO</a>
-            <button className="px-5 py-3 border border-emerald-200 text-emerald-700 rounded-md">View Profile</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Auto-scrolling team carousel component (continuous single-direction infinite scroll)
 interface TeamMember {
@@ -238,17 +289,40 @@ const TeamCarousel: React.FC = () => {
   ];
 
   const [members, setMembers] = useState<TeamMember[]>(defaultMembers);
+  const [loadingMembers, setLoadingMembers] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('about.team');
-      if (raw) {
-        const team = JSON.parse(raw);
-        setMembers(team.length > 0 ? team : defaultMembers);
-      }
-    } catch (err) {
-      setMembers(defaultMembers);
-    }
+    let mounted = true;
+    setLoadingMembers(true);
+    fetch('https://glowac-api.onrender.com/members', { headers: { accept: 'application/json' } })
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((m: any) => ({
+            name: m.name || '',
+            title: m.title || '',
+            phone: m.short_description || '',
+            email: m.email || '',
+            img: m.image_url || '/images/image4.jpg',
+          }));
+          setMembers(mapped.length > 0 ? mapped : defaultMembers);
+        }
+      })
+      .catch(() => {
+        // keep defaults on error
+        setMembers(defaultMembers);
+      })
+      .finally(() => {
+        if (mounted) setLoadingMembers(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Duplicate items for seamless infinite scrolling
@@ -312,16 +386,53 @@ const TeamCarousel: React.FC = () => {
 
 // Environmental Lab image gallery (one large image at a time with controls)
 const ImageGallery: React.FC = () => {
-  const images = ['/images/image1.jpg', '/images/image2.jpg', '/images/image3.jpg'];
+  const [images, setImages] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
-  const next = () => setIndex((i) => (i + 1) % images.length);
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    fetch('https://glowac-api.onrender.com/gallery', { headers: { accept: 'application/json' } })
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (Array.isArray(data) && data.length > 0) {
+          const urls = data.map((d: any) => d.image_preview_url).filter(Boolean);
+          setImages(urls);
+          setIndex(0);
+        }
+      })
+      .catch(() => {
+        // fallback to local images on error
+        if (mounted) setImages(['/images/image1.jpg', '/images/image2.jpg', '/images/image3.jpg']);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const prev = () => setIndex((i) => (i - 1 + (images.length || 1)) % (images.length || 1));
+  const next = () => setIndex((i) => (i + 1) % (images.length || 1));
+
+  const loadingDataUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" stroke="%2382cfd1" stroke-width="5" fill="none" stroke-linecap="round"/><g><path d="M25 5 A20 20 0 0 1 45 25" stroke="%23338a7b" stroke-width="5" fill="none" stroke-linecap="round"/></g><animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/></svg>';
 
   return (
     <div className="relative">
       <div className="overflow-hidden rounded-none border border-emerald-300">
-        <img src={images[index]} alt={`Environmental ${index + 1}`} className="w-full h-[60vh] md:h-screen object-cover" />
+        {loading ? (
+          <div className="w-full h-[60vh] md:h-screen flex items-center justify-center bg-emerald-50">
+            <img src={loadingDataUrl} alt="loading" className="w-20 h-20" />
+          </div>
+        ) : (
+          <img src={images[index]} alt={`Environmental ${index + 1}`} className="w-full h-[60vh] md:h-screen object-cover" />
+        )}
       </div>
 
       <button
@@ -339,7 +450,7 @@ const ImageGallery: React.FC = () => {
       </button>
 
       <div className="mt-4 flex justify-center space-x-2">
-        {images.map((_, i) => (
+        {(images.length > 0 ? images : ['/images/image1.jpg', '/images/image2.jpg', '/images/image3.jpg']).map((_, i) => (
           <button
             key={i}
             onClick={() => setIndex(i)}
