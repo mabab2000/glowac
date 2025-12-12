@@ -156,6 +156,15 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
           </div>
         </div>
       )}
+
+      {/* Toast for RequestServiceCards */}
+      {toast && toast.visible && (
+        <div className="fixed right-6 bottom-6 z-50 w-80">
+          <div className="bg-emerald-600 text-white rounded-md shadow-lg p-4">
+            <div className="font-medium">{toast.text}</div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
@@ -265,7 +274,7 @@ const AboutUs: React.FC = () => {
             <div className="space-y-4">
               {workingHours.map((schedule, index) => (
                 <div 
-                  key={schedule.day}
+                  key={schedule.id}
                   className={`flex justify-between items-center p-4 rounded-lg transition-all duration-300 hover:transform hover:scale-105 ${
                     schedule.status === 'open' 
                       ? 'bg-teal-50 border-l-4 border-teal-500 hover:bg-teal-100' 

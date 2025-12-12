@@ -173,9 +173,15 @@ const ServicesPage: React.FC = () => {
                 </div>
 
                 <div className="mt-6 p-8 bg-white rounded-none border border-emerald-200 text-justify">
-                  <p className="text-gray-700 mb-4">
-                    Select a sub-service from the Services menu to view available tests and procedures.
-                  </p>
+                  {loading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="h-4 bg-gray-100 rounded animate-pulse w-3/4 mx-auto" />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-700 mb-4">Select a sub-service from the Services menu to view available tests and procedures.</p>
+                  )}
                 </div>
               </div>
             </section>
