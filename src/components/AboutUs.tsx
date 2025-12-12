@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // --- Request Service Cards component (moved above AboutUs to avoid runtime reference errors) ---
 export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ defaultService }) => {
@@ -101,16 +101,41 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
   );
 };
 
+type Hour = { id: string; day: string; hours: string; status: 'open' | 'closed' };
+
 const AboutUs: React.FC = () => {
-  const workingHours = [
-    { day: 'Monday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { day: 'Tuesday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { day: 'Wednesday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { day: 'Thursday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { day: 'Friday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { day: 'Saturday', hours: '10:00 AM - 4:00 PM', status: 'open' },
-    { day: 'Sunday', hours: 'Closed', status: 'closed' },
-  ];
+  const [workingHours, setWorkingHours] = useState<Hour[]>([
+    { id: 'monday', day: 'Monday', hours: '9:00 AM - 6:00 PM', status: 'open' },
+    { id: 'tuesday', day: 'Tuesday', hours: '9:00 AM - 6:00 PM', status: 'open' },
+    { id: 'wednesday', day: 'Wednesday', hours: '9:00 AM - 6:00 PM', status: 'open' },
+    { id: 'thursday', day: 'Thursday', hours: '9:00 AM - 6:00 PM', status: 'open' },
+    { id: 'friday', day: 'Friday', hours: '9:00 AM - 6:00 PM', status: 'open' },
+    { id: 'saturday', day: 'Saturday', hours: '10:00 AM - 4:00 PM', status: 'open' },
+    { id: 'sunday', day: 'Sunday', hours: 'Closed', status: 'closed' },
+  ]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('https://glowac-api.onrender.com/tus', { headers: { Accept: 'application/json' } });
+        if (!mounted) return;
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        if (!Array.isArray(data)) return;
+        const mapped: Hour[] = data.map((r: any) => ({
+          id: String(r.id ?? Math.random()),
+          day: typeof r.day === 'string' ? r.day : '',
+          hours: typeof r.hours === 'string' ? r.hours : '',
+          status: (typeof r.status === 'string' && r.status.toLowerCase() === 'closed') ? 'closed' : 'open',
+        }));
+        if (mounted && mapped.length) setWorkingHours(mapped);
+      } catch (err) {
+        console.debug('AboutUs: failed to load working hours from API', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <section id="about" className="pt-0 pb-20 relative mt-12 md:mt-16">

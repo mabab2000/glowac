@@ -201,21 +201,49 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
       const w = localStorage.getItem('home.why');
       setWhy(w ? JSON.parse(w) : []);
     } catch { setWhy([]); }
-    try {
-      const stored = localStorage.getItem(WORKING_HOURS_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const normalized = normalizeWorkingHours(parsed);
-        setWorkingHours(normalized);
-        localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(normalized));
-      } else {
-        setWorkingHours(DEFAULT_WORKING_HOURS);
-        localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(DEFAULT_WORKING_HOURS));
+    // Load working hours from API `/tus`. If API fails, fall back to localStorage/defaults.
+    (async () => {
+      try {
+        const res = await fetch('https://glowac-api.onrender.com/tus');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            const mapped: WorkingHour[] = data.map((r: any, i: number) => ({
+            id: String(r.id ?? `working-hour-${i}`),
+            day: typeof r.day === 'string' ? r.day : `Day ${i + 1}`,
+            hours: typeof r.hours === 'string' ? r.hours : '',
+            status: ((typeof r.status === 'string' && r.status.toLowerCase() === 'closed') ? 'closed' : 'open') as 'open' | 'closed',
+          }));
+            setWorkingHours(mapped.length ? mapped : DEFAULT_WORKING_HOURS);
+            // cache for offline fallback
+            try { localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(mapped)); } catch {}
+          } else {
+            // fallback to localStorage/defaults
+            const stored = localStorage.getItem(WORKING_HOURS_KEY);
+            if (stored) setWorkingHours(normalizeWorkingHours(JSON.parse(stored)));
+            else { setWorkingHours(DEFAULT_WORKING_HOURS); localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(DEFAULT_WORKING_HOURS)); }
+          }
+        } else {
+          throw new Error('API returned non-ok');
+        }
+      } catch (err) {
+        // fallback to localStorage/defaults
+        try {
+          const stored = localStorage.getItem(WORKING_HOURS_KEY);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const normalized = normalizeWorkingHours(parsed);
+            setWorkingHours(normalized);
+          } else {
+            setWorkingHours(DEFAULT_WORKING_HOURS);
+            localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(DEFAULT_WORKING_HOURS));
+          }
+        } catch {
+          setWorkingHours(DEFAULT_WORKING_HOURS);
+          try { localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(DEFAULT_WORKING_HOURS)); } catch {}
+        }
       }
-    } catch {
-      setWorkingHours(DEFAULT_WORKING_HOURS);
-      localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(DEFAULT_WORKING_HOURS));
-    }
+    })();
   }, []);
 
   // Fetch API banners helper
@@ -246,7 +274,7 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
   const persistWorkingHours = (list: WorkingHour[]) => {
     const normalized = list.map((item, index) => normalizeWorkingHour(item, index));
     setWorkingHours(normalized);
-    localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(normalized));
+    try { localStorage.setItem(WORKING_HOURS_KEY, JSON.stringify(normalized)); } catch {}
   };
 
   // Banner slide actions
@@ -255,14 +283,7 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
     loadSlideIntoForm(slide);
   };
 
-  const handleAddSlide = () => {
-    const id = `banner-${Date.now()}`;
-    const nextSlide = createEmptyBannerSlide(id);
-    const nextSlides = [...bannerSlides, nextSlide];
-    persistBannerSlides(nextSlides);
-    handleSelectSlide(nextSlide);
-    alert('New banner slide created. Fill in the details and click "Publish to API" to create.');
-  };
+  
 
   const handleDeleteSlide = (id: string) => {
     if (!window.confirm('Delete this banner slide?')) return;
@@ -342,42 +363,68 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
     setApiLoading(true);
     try {
       const fd = new FormData();
-      fd.append('highlight_tag', slide.highlight || '');
-      fd.append('title', slide.title || '');
-      fd.append('description', slide.description || '');
+      // Use current form state values when publishing so edits are actually sent
+      const payloadHighlight = (slideHighlight ?? '').trim() || slide.highlight || '';
+      const payloadTitle = (slideTitle ?? '').trim() || slide.title || '';
+      const payloadDescription = (slideDescription ?? '').trim() || slide.description || '';
+      fd.append('highlight_tag', payloadHighlight);
+      fd.append('title', payloadTitle);
+      fd.append('description', payloadDescription);
       if (slide.apiId) {
-        // Update: allow image to be optional, but try to send it if possible
+        // Update: allow image to be optional, but prefer image file uploaded via the form
         if (slideImageFile) {
           fd.append('image', slideImageFile, slideImageFile.name);
-        } else if (slide.image) {
+        } else if (slideImage && slideImage.startsWith('http')) {
+          // If the form's Image URL field was left with a URL, try to fetch and forward it
           try {
-            const response = await fetch(slide.image);
+            const response = await fetch(slideImage);
             const blob = await response.blob();
-            const urlParts = slide.image.split('/');
+            const urlParts = slideImage.split('/');
             const filename = urlParts[urlParts.length - 1] || 'image.jpg';
             fd.append('image', blob, filename);
-          } catch {}
+          } catch (err) {
+            // ignore and continue without image
+            console.debug('Could not fetch provided image URL to forward:', err);
+          }
         }
         const res = await fetch(`https://glowac-api.onrender.com/banners/${slide.apiId}`, {
           method: 'PUT',
           body: fd,
+          headers: { Accept: 'application/json' },
         });
         if (!res.ok) throw new Error('Failed to update banner');
         const updated = await res.json();
-        persistBannerSlides(bannerSlides.map(s => s.id === slide.id ? { ...s, image: updated.image_preview_url } : s));
+        // update the local slide with returned values from server
+        persistBannerSlides(bannerSlides.map(s => s.id === slide.id ? {
+          ...s,
+          apiId: updated.id ?? s.apiId,
+          image: updated.image_preview_url ?? s.image,
+          title: typeof updated.title === 'string' ? updated.title : payloadTitle,
+          highlight: typeof updated.highlight_tag === 'string' ? updated.highlight_tag : payloadHighlight,
+          description: typeof updated.description === 'string' ? updated.description : payloadDescription,
+        } : s));
         alert('Banner updated on API');
       } else {
         // Create: require image file for new slide
+        // For create, prefer an uploaded file; if the user provided an Image URL we could try to fetch it,
+        // but server may require a file; keep the existing behavior requiring a file upload.
         if (!slideImageFile) {
           alert('Please select an image file to create a new banner.');
           setApiLoading(false);
           return;
         }
         fd.append('image', slideImageFile, slideImageFile.name);
-        const res = await fetch('https://glowac-api.onrender.com/banners', { method: 'POST', body: fd });
+        const res = await fetch('https://glowac-api.onrender.com/banners', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
         if (!res.ok) throw new Error('Failed to create banner');
         const created = await res.json();
-        persistBannerSlides(bannerSlides.map(s => s.id === slide.id ? { ...s, apiId: created.id, image: created.image_preview_url } : s));
+        persistBannerSlides(bannerSlides.map(s => s.id === slide.id ? {
+          ...s,
+          apiId: created.id,
+          image: created.image_preview_url ?? s.image,
+          title: typeof created.title === 'string' ? created.title : payloadTitle,
+          highlight: typeof created.highlight_tag === 'string' ? created.highlight_tag : payloadHighlight,
+          description: typeof created.description === 'string' ? created.description : payloadDescription,
+        } : s));
         alert('Banner created on API');
       }
       await fetchApiBanners();
@@ -465,30 +512,127 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
     const day = workingDayInput.trim();
     const hours = workingHoursInput.trim();
     if (!day || !hours) return;
-    const newEntry: WorkingHour = {
-      id: `working-hour-${Date.now()}`,
-      day,
-      hours,
-      status: workingStatusInput,
-    };
-    persistWorkingHours([...workingHours, newEntry]);
-    setWorkingDayInput('');
-    setWorkingHoursInput('');
-    setWorkingStatusInput('open');
+    // POST to API `/tus` using x-www-form-urlencoded
+    (async () => {
+      setApiLoading(true);
+      setApiError(null);
+      try {
+        const body = new URLSearchParams();
+        body.append('day', day);
+        body.append('hours', hours);
+        body.append('status', workingStatusInput === 'closed' ? 'Closed' : 'Open');
+        const res = await fetch('https://glowac-api.onrender.com/tus', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+          body: body.toString(),
+        });
+        if (!res.ok) throw new Error('Failed to add working hours');
+        const created = await res.json();
+        // refresh list from API
+        const ref = await fetch('https://glowac-api.onrender.com/tus');
+        if (ref.ok) {
+          const data = await ref.json();
+          if (Array.isArray(data)) {
+            const mapped: WorkingHour[] = data.map((r: any, i: number) => ({
+              id: String(r.id ?? `working-hour-${i}`),
+              day: typeof r.day === 'string' ? r.day : `Day ${i + 1}`,
+              hours: typeof r.hours === 'string' ? r.hours : '',
+              status: ((typeof r.status === 'string' && r.status.toLowerCase() === 'closed') ? 'closed' : 'open') as 'open' | 'closed',
+            }));
+            persistWorkingHours(mapped);
+          }
+        }
+        setWorkingDayInput('');
+        setWorkingHoursInput('');
+        setWorkingStatusInput('open');
+      } catch (err) {
+        console.error('Failed to add working hour', err);
+        setApiError('Failed to add working hour');
+      } finally {
+        setApiLoading(false);
+      }
+    })();
   };
 
   const handleDeleteWorkingHour = (id: string) => {
     if (!window.confirm('Remove this working hours entry?')) return;
-    persistWorkingHours(workingHours.filter(entry => entry.id !== id));
+    (async () => {
+      setApiLoading(true);
+      setApiError(null);
+      try {
+        // try deleting via API; if API does not support it, fallback to local removal
+        const res = await fetch(`https://glowac-api.onrender.com/tus/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          // refresh list
+          const ref = await fetch('https://glowac-api.onrender.com/tus');
+          if (ref.ok) {
+            const data = await ref.json();
+            if (Array.isArray(data)) {
+              const mapped: WorkingHour[] = data.map((r: any, i: number) => ({
+                id: String(r.id ?? `working-hour-${i}`),
+                day: typeof r.day === 'string' ? r.day : `Day ${i + 1}`,
+                hours: typeof r.hours === 'string' ? r.hours : '',
+                status: (typeof r.status === 'string' && r.status.toLowerCase() === 'closed') ? 'closed' : 'open',
+              }));
+              persistWorkingHours(mapped);
+            }
+          }
+        } else {
+          // fallback local removal
+          persistWorkingHours(workingHours.filter(entry => entry.id !== id));
+        }
+      } catch (err) {
+        console.error('Failed to delete working hour via API, falling back', err);
+        persistWorkingHours(workingHours.filter(entry => entry.id !== id));
+      } finally {
+        setApiLoading(false);
+      }
+    })();
   };
 
-  const handleResetWorkingHours = () => {
-    if (!window.confirm('Reset working hours to the default schedule?')) return;
-    persistWorkingHours(DEFAULT_WORKING_HOURS);
-    setWorkingDayInput('');
-    setWorkingHoursInput('');
-    setWorkingStatusInput('open');
+  // Update an existing working hour (PUT to /tus/{id}) if it's from the API
+  const handleUpdateWorkingHour = async (id: string) => {
+    const entry = workingHours.find(e => e.id === id);
+    if (!entry) return;
+    // If id is not numeric (local-only), just persist locally
+    if (!/^\d+$/.test(id)) {
+      persistWorkingHours(workingHours.map(e => e.id === id ? entry : e));
+      return;
+    }
+
+    setApiLoading(true);
+    setApiError(null);
+    try {
+      const body = new URLSearchParams();
+      body.append('day', entry.day);
+      body.append('hours', entry.hours);
+      // send status as 'closed' or 'Open' to match server examples
+      body.append('status', entry.status === 'closed' ? 'closed' : 'Open');
+
+      const res = await fetch(`https://glowac-api.onrender.com/tus/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+        body: body.toString(),
+      });
+      if (!res.ok) throw new Error('Failed to update working hour');
+      const updated = await res.json();
+      // update local state with server response
+      const mapped = workingHours.map(e => e.id === id ? {
+        id: String(updated.id ?? id),
+        day: typeof updated.day === 'string' ? updated.day : e.day,
+        hours: typeof updated.hours === 'string' ? updated.hours : e.hours,
+        status: ((typeof updated.status === 'string' && updated.status.toLowerCase() === 'closed') ? 'closed' : 'open') as 'open' | 'closed',
+      } : e);
+      persistWorkingHours(mapped);
+    } catch (err) {
+      console.error('Failed to update working hour', err);
+      setApiError('Failed to update working hour');
+    } finally {
+      setApiLoading(false);
+    }
   };
+
+ 
 
   // Facts actions
   const addFact = () => {
@@ -531,21 +675,9 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
   };
 
   // Added useEffect to load banner images only once when the page reloads
-  useEffect(() => {
-    // Logic to load banner images
-    const loadBannerImages = async () => {
-      try {
-        // Example: Fetch banner images from an API or preload them
-        const response = await fetch('/api/banner-images');
-        const images = await response.json();
-        setBannerSlides(images.map((img: any, index: number) => normalizeBannerSlide(img, index)));
-      } catch (error) {
-        console.error('Failed to load banner images:', error);
-      }
-    };
-
-    loadBannerImages();
-  }, []); // Empty dependency array ensures this runs only once on page load
+  // NOTE: banner slides are loaded from the API in the main mount effect above.
+  // Removed accidental extra loader that fetched `/api/banner-images` which could
+  // overwrite the real API-loaded slides during the session.
 
   return (
     <div className="space-y-8">
@@ -553,12 +685,10 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Banner Slides</h2>
-            <p className="text-sm text-gray-600">Manage the content that appears on the public homepage banner. Provide an image, highlight tag, headline, and supporting description for each slide.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700">Add New Banner</button>
-            <button onClick={handleAddSlide} className="px-4 py-2 bg-teal-600 text-white rounded-md shadow-sm hover:bg-teal-700">Add Slide (Legacy)</button>
-            <button onClick={handleClearSlides} className="px-4 py-2 border rounded-md shadow-sm hover:bg-gray-50" disabled={bannerSlides.length === 0}>Clear All</button>
+     
             <span className="text-sm text-gray-500">Total: {bannerSlides.length}</span>
           </div>
               {/* Add New Banner Modal */}
@@ -738,11 +868,8 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Working Hours</h2>
-            <p className="text-sm text-gray-600">Maintain the weekly schedule that appears on the public homepage. Update days, hours, and open/closed status.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={handleResetWorkingHours} className="px-4 py-2 border rounded-md shadow-sm hover:bg-gray-50">Reset to Default</button>
-          </div>
+         
         </div>
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-4">
@@ -806,9 +933,14 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
                     <option value="closed">Closed</option>
                   </select>
                 </div>
-                <button onClick={() => handleDeleteWorkingHour(entry.id)} className="mt-5 px-3 py-2 border rounded text-red-600 hover:bg-red-50">
-                  Delete
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => handleUpdateWorkingHour(entry.id)} disabled={apiLoading} className="mt-5 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    {apiLoading ? 'Saving...' : 'Save'}
+                  </button>
+                  <button onClick={() => handleDeleteWorkingHour(entry.id)} className="mt-5 px-3 py-2 border rounded text-red-600 hover:bg-red-50">
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}

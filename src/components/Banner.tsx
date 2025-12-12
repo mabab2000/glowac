@@ -224,11 +224,23 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
       const url = editingId ? `https://glowac-api.onrender.com/banners/${editingId}` : 'https://glowac-api.onrender.com/banners';
       const method = editingId ? 'PUT' : 'POST';
       console.debug('handleCreateOrUpdate: submitting', { url, method, editingId, titleInput, descriptionInput, highlightTag, imageFile });
-      const res = await fetch(url, { method, body: fd });
+      const res = await fetch(url, { method, body: fd, headers: { Accept: 'application/json' } });
       if (!res.ok) {
         const txt = await res.text().catch(() => '');
         console.error('handleCreateOrUpdate failed', res.status, txt);
         throw new Error(`Failed: ${res.status} ${txt}`);
+      }
+      // parse response body (server returns the updated/created banner)
+      const returned = await res.json().catch(() => null);
+      console.debug('handleCreateOrUpdate: response', returned);
+      // optimistically update apiBanners so the admin list reflects the change immediately
+      if (returned && typeof returned === 'object') {
+        setApiBanners(prev => {
+          if (!prev) return prev;
+          const exists = prev.some(p => p.id === returned.id);
+          if (exists) return prev.map(p => (p.id === returned.id ? returned : p));
+          return [returned as ApiBanner, ...prev];
+        });
       }
       await refreshBanners();
       // reset form
