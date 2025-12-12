@@ -294,155 +294,178 @@ const ServiceUpdate: React.FC = () => {
   }
 
   const selectedService = services.find(s => s.id === selectedId) ?? null;
+    const [tab, setTab] = useState<'main' | 'sub' | 'tests'>('main');
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left: Service Management Card (API-backed) */}
-      <div className="lg:col-span-1 space-y-6">
-        <div className="bg-white border rounded p-4">
-          <h3 className="font-semibold mb-4">Service Management</h3>
-          <form onSubmit={handleAddNewApiService} className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={newServiceName}
-              onChange={e => setNewServiceName(e.target.value)}
-              className="flex-1 border px-3 py-2 rounded"
-              placeholder="Add new service name"
-              disabled={loading}
-            />
-            <button type="submit" className="px-3 py-1 bg-teal-600 text-white rounded text-sm" disabled={loading}>Add</button>
-          </form>
-          {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-          <div className="space-y-2">
-            {loading ? (
-              <div className="p-3 border rounded text-center text-sm text-gray-500">Loading...</div>
-            ) : apiServices.length === 0 ? (
-              <div className="p-3 border rounded text-center text-sm text-gray-500">No services found.</div>
-            ) : (
-              apiServices.map(s => (
-                <div
-                  key={s.id}
-                  className={`p-3 border rounded cursor-pointer hover:bg-gray-100 ${selectedMainServiceId === s.id ? 'bg-teal-50 border-teal-500' : 'bg-gray-50'}`}
-                  onClick={() => setSelectedMainServiceId(s.id)}
-                >
-                  <div className="font-medium text-sm">{s.service_name}</div>
-                </div>
-              ))
-            )}
-          </div>
+    return (
+      <div className="space-y-4">
+        <div className="flex gap-2">
+          <button
+            className={`px-3 py-1 rounded ${tab === 'main' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`}
+            onClick={() => setTab('main')}
+          >
+            Main Service
+          </button>
+          <button
+            className={`px-3 py-1 rounded ${tab === 'sub' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`}
+            onClick={() => setTab('sub')}
+          >
+            Sub-Service
+          </button>
+          <button
+            className={`px-3 py-1 rounded ${tab === 'tests' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`}
+            onClick={() => setTab('tests')}
+          >
+            Tests
+          </button>
         </div>
 
-        {/* Sub-service Management Card */}
-        <div className="bg-white border rounded p-4">
-          <h3 className="font-semibold mb-4">Sub-Service Management</h3>
-          {!selectedMainServiceId ? (
-            <div className="text-gray-500 text-sm">Select a main service to view and add sub-services.</div>
-          ) : (
-            <>
-              <form onSubmit={handleAddSubService} className="space-y-2 mb-4">
-                <input
-                  type="text"
-                  value={newSubServiceName}
-                  onChange={e => setNewSubServiceName(e.target.value)}
-                  className="w-full border px-3 py-2 rounded"
-                  placeholder="Sub-service name"
-                  disabled={subServiceLoading}
-                />
-                <textarea
-                  value={newSubServiceDesc}
-                  onChange={e => setNewSubServiceDesc(e.target.value)}
-                  className="w-full border px-3 py-2 rounded"
-                  placeholder="Description"
-                  rows={2}
-                  disabled={subServiceLoading}
-                />
-                <button type="submit" className="px-3 py-1 bg-teal-600 text-white rounded text-sm" disabled={subServiceLoading}>Add Sub-Service</button>
-              </form>
-              {subServiceError && <div className="text-red-600 text-sm mb-2">{subServiceError}</div>}
-              <div className="space-y-2">
-                {subServiceLoading ? (
-                  <div className="p-3 border rounded text-center text-sm text-gray-500">Loading...</div>
-                ) : subServices.length === 0 ? (
-                  <div className="p-3 border rounded text-center text-sm text-gray-500">No sub-services found.</div>
-                ) : (
-                  subServices.map(s => (
-                    <div
-                      key={s.id}
-                      className={`p-3 border rounded bg-gray-50 cursor-pointer ${selectedSubService && selectedSubService.id === s.id ? 'border-teal-500 bg-teal-50' : ''}`}
-                      onClick={() => setSelectedSubService(s)}
-                    >
-                      <div className="font-medium text-sm">{s.service_name}</div>
-                      <div className="text-xs text-gray-500 mt-1">{s.description}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Right: Sub-Service Test Management */}
-      <div className="lg:col-span-2">
-        {selectedSubService ? (
-          <div className="bg-white border rounded p-6 space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-xl font-semibold">Tests for: {selectedSubService.service_name}</h3>
-            </div>
-            <form onSubmit={editTestId ? handleUpdateTest : handleAddTest} className="flex flex-col md:flex-row gap-2 mb-4">
+        {tab === 'main' && (
+          <div className="bg-white border rounded p-4">
+            <h3 className="font-semibold mb-4">Service Management</h3>
+            <form onSubmit={handleAddNewApiService} className="flex gap-2 mb-4">
               <input
                 type="text"
-                value={editTestId ? editTestName : newTestName}
-                onChange={e => editTestId ? setEditTestName(e.target.value) : setNewTestName(e.target.value)}
+                value={newServiceName}
+                onChange={e => setNewServiceName(e.target.value)}
                 className="flex-1 border px-3 py-2 rounded"
-                placeholder="Test name"
-                disabled={testLoading}
+                placeholder="Add new service name"
+                disabled={loading}
               />
-              <input
-                type="text"
-                value={editTestId ? editTestDesc : newTestDesc}
-                onChange={e => editTestId ? setEditTestDesc(e.target.value) : setNewTestDesc(e.target.value)}
-                className="flex-1 border px-3 py-2 rounded"
-                placeholder="Description"
-                disabled={testLoading}
-              />
-              <button type="submit" className="px-3 py-1 bg-teal-600 text-white rounded text-sm" disabled={testLoading}>
-                {editTestId ? 'Update' : 'Add'}
-              </button>
-              {editTestId && (
-                <button type="button" className="px-3 py-1 border rounded text-sm" onClick={() => { setEditTestId(null); setEditTestName(''); setEditTestDesc(''); }}>Cancel</button>
-              )}
+              <button type="submit" className="px-3 py-1 bg-teal-600 text-white rounded text-sm" disabled={loading}>Add</button>
             </form>
-            {testError && <div className="text-red-600 text-sm mb-2">{testError}</div>}
-            <ul className="space-y-2">
-              {testLoading ? (
-                <li className="p-3 border rounded text-center text-sm text-gray-500">Loading...</li>
-              ) : serviceTests.length === 0 ? (
-                <li className="p-3 border rounded text-center text-sm text-gray-500">No tests defined yet.</li>
+            {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
+            <div className="space-y-2">
+              {loading ? (
+                <div className="p-3 border rounded text-center text-sm text-gray-500">Loading...</div>
+              ) : apiServices.length === 0 ? (
+                <div className="p-3 border rounded text-center text-sm text-gray-500">No services found.</div>
               ) : (
-                serviceTests.map(t => (
-                  <li key={t.id} className="flex flex-col md:flex-row md:items-center justify-between border p-2 rounded gap-2">
-                    <div>
-                      <div className="text-sm font-medium">{t.test_name}</div>
-                      <div className="text-xs text-gray-500">{t.description}</div>
-                    </div>
-                    <div className="flex gap-2 mt-2 md:mt-0">
-                      <button className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded" onClick={() => handleEditTest(t)}>Edit</button>
-                      <button className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded" onClick={() => handleDeleteTest(t.id)}>Delete</button>
-                    </div>
-                  </li>
+                apiServices.map(s => (
+                  <div
+                    key={s.id}
+                    className={`p-3 border rounded cursor-pointer hover:bg-gray-100 ${selectedMainServiceId === s.id ? 'bg-teal-50 border-teal-500' : 'bg-gray-50'}`}
+                    onClick={() => setSelectedMainServiceId(s.id)}
+                  >
+                    <div className="font-medium text-sm">{s.service_name}</div>
+                  </div>
                 ))
               )}
-            </ul>
+            </div>
           </div>
-        ) : (
-          <div className="bg-white border rounded p-6 text-center text-gray-500">
-            Select a sub-service from the list to view and manage its tests.
+        )}
+
+        {tab === 'sub' && (
+          <div className="bg-white border rounded p-4">
+            <h3 className="font-semibold mb-4">Sub-Service Management</h3>
+            {!selectedMainServiceId ? (
+              <div className="text-gray-500 text-sm">Select a main service (Main Service tab) to view and add sub-services.</div>
+            ) : (
+              <>
+                <form onSubmit={handleAddSubService} className="space-y-2 mb-4">
+                  <input
+                    type="text"
+                    value={newSubServiceName}
+                    onChange={e => setNewSubServiceName(e.target.value)}
+                    className="w-full border px-3 py-2 rounded"
+                    placeholder="Sub-service name"
+                    disabled={subServiceLoading}
+                  />
+                  <textarea
+                    value={newSubServiceDesc}
+                    onChange={e => setNewSubServiceDesc(e.target.value)}
+                    className="w-full border px-3 py-2 rounded"
+                    placeholder="Description"
+                    rows={2}
+                    disabled={subServiceLoading}
+                  />
+                  <button type="submit" className="px-3 py-1 bg-teal-600 text-white rounded text-sm" disabled={subServiceLoading}>Add Sub-Service</button>
+                </form>
+                {subServiceError && <div className="text-red-600 text-sm mb-2">{subServiceError}</div>}
+                <div className="space-y-2">
+                  {subServiceLoading ? (
+                    <div className="p-3 border rounded text-center text-sm text-gray-500">Loading...</div>
+                  ) : subServices.length === 0 ? (
+                    <div className="p-3 border rounded text-center text-sm text-gray-500">No sub-services found.</div>
+                  ) : (
+                    subServices.map(s => (
+                      <div
+                        key={s.id}
+                        className={`p-3 border rounded bg-gray-50 cursor-pointer ${selectedSubService && selectedSubService.id === s.id ? 'border-teal-500 bg-teal-50' : ''}`}
+                        onClick={() => setSelectedSubService(s)}
+                      >
+                        <div className="font-medium text-sm">{s.service_name}</div>
+                        <div className="text-xs text-gray-500 mt-1">{s.description}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {tab === 'tests' && (
+          <div>
+            {selectedSubService ? (
+              <div className="bg-white border rounded p-6 space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-semibold">Tests for: {selectedSubService.service_name}</h3>
+                </div>
+                <form onSubmit={editTestId ? handleUpdateTest : handleAddTest} className="flex flex-col md:flex-row gap-2 mb-4">
+                  <input
+                    type="text"
+                    value={editTestId ? editTestName : newTestName}
+                    onChange={e => (editTestId ? setEditTestName(e.target.value) : setNewTestName(e.target.value))}
+                    className="flex-1 border px-3 py-2 rounded"
+                    placeholder="Test name"
+                    disabled={testLoading}
+                  />
+                  <input
+                    type="text"
+                    value={editTestId ? editTestDesc : newTestDesc}
+                    onChange={e => (editTestId ? setEditTestDesc(e.target.value) : setNewTestDesc(e.target.value))}
+                    className="flex-1 border px-3 py-2 rounded"
+                    placeholder="Description"
+                    disabled={testLoading}
+                  />
+                  <button type="submit" className="px-3 py-1 bg-teal-600 text-white rounded text-sm" disabled={testLoading}>
+                    {editTestId ? 'Update' : 'Add'}
+                  </button>
+                  {editTestId && (
+                    <button type="button" className="px-3 py-1 border rounded text-sm" onClick={() => { setEditTestId(null); setEditTestName(''); setEditTestDesc(''); }}>
+                      Cancel
+                    </button>
+                  )}
+                </form>
+                {testError && <div className="text-red-600 text-sm mb-2">{testError}</div>}
+                <ul className="space-y-2">
+                  {testLoading ? (
+                    <li className="p-3 border rounded text-center text-sm text-gray-500">Loading...</li>
+                  ) : serviceTests.length === 0 ? (
+                    <li className="p-3 border rounded text-center text-sm text-gray-500">No tests defined yet.</li>
+                  ) : (
+                    serviceTests.map(t => (
+                      <li key={t.id} className="flex flex-col md:flex-row md:items-center justify-between border p-2 rounded gap-2">
+                        <div>
+                          <div className="text-sm font-medium">{t.test_name}</div>
+                          <div className="text-xs text-gray-500">{t.description}</div>
+                        </div>
+                        <div className="flex gap-2 mt-2 md:mt-0">
+                          <button type="button" className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded" onClick={() => handleEditTest(t)}>Edit</button>
+                          <button type="button" className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded" onClick={() => handleDeleteTest(t.id)}>Delete</button>
+                        </div>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+            ) : (
+              <div className="bg-white border rounded p-6 text-center text-gray-500">Select a sub-service (Sub-Service tab) to view and manage its tests.</div>
+            )}
           </div>
         )}
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default ServiceUpdate;
+  export default ServiceUpdate;

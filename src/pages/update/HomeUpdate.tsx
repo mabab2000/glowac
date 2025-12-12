@@ -798,332 +798,318 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
   // Removed accidental extra loader that fetched `/api/banner-images` which could
   // overwrite the real API-loaded slides during the session.
 
+  const [tab, setTab] = useState<'banners' | 'hours' | 'facts'>('banners');
+
   return (
-    <div className="space-y-8">
-      <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Banner Slides</h2>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700">Add New Banner</button>
-     
-            <span className="text-sm text-gray-500">Total: {bannerSlides.length}</span>
-          </div>
-              {/* Add New Banner Modal */}
-              {showAddModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                  <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-                    <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowAddModal(false)}>&times;</button>
-                    <h2 className="text-xl font-semibold mb-4">Add New Banner</h2>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm mb-1">Highlight Tag</label>
-                        <input className="w-full border px-3 py-2 rounded" value={newBanner.highlight} onChange={e => setNewBanner(b => ({ ...b, highlight: e.target.value }))} />
-                      </div>
-                      <div>
-                        <label className="block text-sm mb-1">Title</label>
-                        <input className="w-full border px-3 py-2 rounded" value={newBanner.title} onChange={e => setNewBanner(b => ({ ...b, title: e.target.value }))} />
-                      </div>
-                      <div>
-                        <label className="block text-sm mb-1">Description</label>
-                        <textarea className="w-full border px-3 py-2 rounded" rows={3} value={newBanner.description} onChange={e => setNewBanner(b => ({ ...b, description: e.target.value }))} />
-                      </div>
-                      <div>
-                        <label className="block text-sm mb-1">Image</label>
-                        <input type="file" accept="image/*" ref={addImageInputRef} onChange={e => setNewBanner(b => ({ ...b, imageFile: e.target.files && e.target.files[0] ? e.target.files[0] : null }))} />
-                      </div>
-                      {addModalError && <div className="text-red-600 text-sm">{addModalError}</div>}
-                      <button
-                        className="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700"
-                        onClick={async () => {
-                          setAddModalError(null);
-                          if (!newBanner.highlight.trim() || !newBanner.title.trim() || !newBanner.description.trim() || !newBanner.imageFile) {
-                            setAddModalError('All fields and image are required.');
+    <div className="space-y-6">
+      <div className="flex gap-2">
+        <button className={`px-3 py-1 rounded ${tab === 'banners' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`} onClick={() => setTab('banners')}>Banners</button>
+        <button className={`px-3 py-1 rounded ${tab === 'hours' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`} onClick={() => setTab('hours')}>Working Hours</button>
+        <button className={`px-3 py-1 rounded ${tab === 'facts' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`} onClick={() => setTab('facts')}>Facts</button>
+      </div>
+
+      {tab === 'banners' && (
+        <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Banner Slides</h2>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700">Add New Banner</button>
+              <span className="text-sm text-gray-500">Total: {bannerSlides.length}</span>
+            </div>
+            {showAddModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+                  <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowAddModal(false)}>&times;</button>
+                  <h2 className="text-xl font-semibold mb-4">Add New Banner</h2>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm mb-1">Highlight Tag</label>
+                      <input className="w-full border px-3 py-2 rounded" value={newBanner.highlight} onChange={e => setNewBanner(b => ({ ...b, highlight: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">Title</label>
+                      <input className="w-full border px-3 py-2 rounded" value={newBanner.title} onChange={e => setNewBanner(b => ({ ...b, title: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">Description</label>
+                      <textarea className="w-full border px-3 py-2 rounded" rows={3} value={newBanner.description} onChange={e => setNewBanner(b => ({ ...b, description: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">Image</label>
+                      <input type="file" accept="image/*" ref={addImageInputRef} onChange={e => setNewBanner(b => ({ ...b, imageFile: e.target.files && e.target.files[0] ? e.target.files[0] : null }))} />
+                    </div>
+                    {addModalError && <div className="text-red-600 text-sm">{addModalError}</div>}
+                    <button
+                      className="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700"
+                      onClick={async () => {
+                        setAddModalError(null);
+                        if (!newBanner.highlight.trim() || !newBanner.title.trim() || !newBanner.description.trim() || !newBanner.imageFile) {
+                          setAddModalError('All fields and image are required.');
+                          return;
+                        }
+                        const fd = new FormData();
+                        fd.append('highlight_tag', newBanner.highlight);
+                        fd.append('title', newBanner.title);
+                        fd.append('description', newBanner.description);
+                        fd.append('image', newBanner.imageFile, newBanner.imageFile.name);
+                        try {
+                          const res = await fetch('https://glowac-api.onrender.com/banners', { method: 'POST', body: fd });
+                          if (!res.ok) {
+                            setAddModalError('Failed to create banner.');
                             return;
                           }
-                          const fd = new FormData();
-                          fd.append('highlight_tag', newBanner.highlight);
-                          fd.append('title', newBanner.title);
-                          fd.append('description', newBanner.description);
-                          fd.append('image', newBanner.imageFile, newBanner.imageFile.name);
-                          try {
-                            const res = await fetch('https://glowac-api.onrender.com/banners', { method: 'POST', body: fd });
-                            if (!res.ok) {
-                              setAddModalError('Failed to create banner.');
-                              return;
-                            }
-                            setShowAddModal(false);
-                            setNewBanner({ highlight: '', title: '', description: '', imageFile: null });
-                            if (addImageInputRef.current) addImageInputRef.current.value = '';
-                            await handleLoadFromApi();
-                          } catch (err) {
-                            setAddModalError('Network or server error.');
-                          }
-                        }}
-                      >Create Banner</button>
-                    </div>
+                          setShowAddModal(false);
+                          setNewBanner({ highlight: '', title: '', description: '', imageFile: null });
+                          if (addImageInputRef.current) addImageInputRef.current.value = '';
+                          await handleLoadFromApi();
+                        } catch (err) {
+                          setAddModalError('Network or server error.');
+                        }
+                      }}
+                    >Create Banner</button>
                   </div>
                 </div>
-              )}
-        </div>
+              </div>
+            )}
+          </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="lg:w-1/2 space-y-3">
-            {bannerSlides.map((slide, index) => (
-              <div
-                key={slide.id}
-                className={`flex items-center gap-3 border rounded-xl p-3 transition-colors cursor-pointer ${selectedSlideId === slide.id ? 'border-teal-500 bg-teal-50' : 'hover:bg-gray-50'}`}
-                onClick={() => handleSelectSlide(slide)}
-              >
-                <img
-                  src={slide.image || '/placeholder.png'}
-                  alt={slide.title || `slide-${index + 1}`}
-                  className="w-24 h-16 object-cover rounded border"
-                  onError={e => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-900 truncate">{slide.title || 'Untitled Slide'}</div>
-                  <div className="text-xs text-gray-600 truncate">{slide.description || 'No description set'}</div>
-                  <div className="text-xs text-gray-500 truncate">Highlight: {slide.highlight || '—'}</div>
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="lg:w-1/2 space-y-3">
+              {bannerSlides.map((slide, index) => (
+                <div
+                  key={slide.id}
+                  className={`flex items-center gap-3 border rounded-xl p-3 transition-colors cursor-pointer ${selectedSlideId === slide.id ? 'border-teal-500 bg-teal-50' : 'hover:bg-gray-50'}`}
+                  onClick={() => handleSelectSlide(slide)}
+                >
+                  <img
+                    src={slide.image || '/placeholder.png'}
+                    alt={slide.title || `slide-${index + 1}`}
+                    className="w-24 h-16 object-cover rounded border"
+                    onError={e => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-gray-900 truncate">{slide.title || 'Untitled Slide'}</div>
+                    <div className="text-xs text-gray-600 truncate">{slide.description || 'No description set'}</div>
+                    <div className="text-xs text-gray-500 truncate">Highlight: {slide.highlight || '—'}</div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, -1); }}
+                      className="px-2 py-1 border rounded"
+                      disabled={index === 0}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, 1); }}
+                      className="px-2 py-1 border rounded"
+                      disabled={index === bannerSlides.length - 1}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); handleDeleteSlide(slide.id); }}
+                      className="px-2 py-1 border rounded text-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, -1); }}
-                    className="px-2 py-1 border rounded"
-                    disabled={index === 0}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, 1); }}
-                    className="px-2 py-1 border rounded"
-                    disabled={index === bannerSlides.length - 1}
-                  >
-                    ↓
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); handleDeleteSlide(slide.id); }}
-                    className="px-2 py-1 border rounded text-red-600"
-                  >
-                    Delete
-                  </button>
+              ))}
+              {bannerSlides.length === 0 && (
+                <div className="border border-dashed rounded-xl p-6 text-center text-sm text-gray-500">
+                  No slides configured. Click "Add Slide" to create the first banner entry.
+                </div>
+              )}
+            </div>
+
+            <div className="lg:flex-1">
+              {selectedSlideId && selectedSlide ? (
+                <div className="space-y-4 border border-gray-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Slide Details</h3>
+                    <span className="text-xs text-gray-500">ID: {selectedSlideId}</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-gray-700 mb-1">Image URL</label>
+                      <input
+                        className="w-full border px-3 py-2 rounded"
+                        value={slideImage}
+                        onChange={e => setSlideImage(e.target.value)}
+                        placeholder="https://.../image.jpg"
+                      />
+                      <div className="mt-2 text-sm text-gray-500">Or upload an image when publishing to the API</div>
+                      <input type="file" accept="image/*" onChange={e => setSlideImageFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)} className="mt-2" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">Highlight Tag</label>
+                      <input
+                        className="w-full border px-3 py-2 rounded"
+                        value={slideHighlight}
+                        onChange={e => setSlideHighlight(e.target.value)}
+                        placeholder="E.g. ECO FRIENDLY"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-gray-700 mb-1">Title</label>
+                      <input
+                        className="w-full border px-3 py-2 rounded"
+                        value={slideTitle}
+                        onChange={e => setSlideTitle(e.target.value)}
+                        placeholder="Main headline"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm text-gray-700 mb-1">Description</label>
+                      <textarea
+                        className="w-full border px-3 py-2 rounded"
+                        rows={4}
+                        value={slideDescription}
+                        onChange={e => setSlideDescription(e.target.value)}
+                        placeholder="Supporting copy shown beneath the titles"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 justify-end">
+                    <button onClick={handlePublishToApi} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700" disabled={apiLoading}>{apiLoading ? 'Publishing...' : 'Publish to API'}</button>
+                    <button onClick={handleDeleteFromApi} className="px-4 py-2 border rounded-md shadow-sm text-red-600 hover:bg-red-50" disabled={apiLoading}>Delete from API</button>
+                    <button onClick={handleLoadFromApi} className="px-4 py-2 border rounded-md shadow-sm" disabled={apiLoading}>{apiLoading ? 'Loading...' : 'Load From API'}</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="border border-dashed rounded-2xl p-6 text-center text-sm text-gray-500">
+                  Select a slide from the list to edit its content.
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {tab === 'hours' && (
+        <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Working Hours</h2>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-4">
+            <input
+              className="border px-3 py-2 rounded md:flex-1"
+              placeholder="Day (e.g. Monday)"
+              value={workingDayInput}
+              onChange={e => setWorkingDayInput(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded md:flex-1"
+              placeholder="Hours (e.g. 9:00 AM - 6:00 PM)"
+              value={workingHoursInput}
+              onChange={e => setWorkingHoursInput(e.target.value)}
+            />
+            <select
+              className="border px-3 py-2 rounded md:w-40"
+              value={workingStatusInput}
+              onChange={e => setWorkingStatusInput(e.target.value === 'closed' ? 'closed' : 'open')}
+            >
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+            <button
+              onClick={handleAddWorkingHour}
+              className="px-4 py-2 bg-teal-600 text-white rounded-md shadow-sm hover:bg-teal-700 md:w-auto"
+              disabled={!workingDayInput.trim() || !workingHoursInput.trim()}
+            >
+              Add Entry
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {workingHours.map(entry => (
+              <div key={entry.id} className="flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-2xl p-4">
+                <div className="w-full md:w-48">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Day</label>
+                  <input
+                    className="w-full border px-3 py-2 rounded"
+                    value={entry.day}
+                    onChange={e => handleWorkingHourChange(entry.id, 'day', e.target.value)}
+                  />
+                </div>
+                <div className="w-full md:flex-1">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Hours</label>
+                  <input
+                    className="w-full border px-3 py-2 rounded"
+                    value={entry.hours}
+                    onChange={e => handleWorkingHourChange(entry.id, 'hours', e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                    <select
+                      className="border px-3 py-2 rounded"
+                      value={entry.status}
+                      onChange={e => handleWorkingHourChange(entry.id, 'status', e.target.value)}
+                    >
+                      <option value="open">Open</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleUpdateWorkingHour(entry.id)} disabled={apiLoading} className="mt-5 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                      {apiLoading ? 'Saving...' : 'Save'}
+                    </button>
+                    <button onClick={() => handleDeleteWorkingHour(entry.id)} className="mt-5 px-3 py-2 border rounded text-red-600 hover:bg-red-50">
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
-            {bannerSlides.length === 0 && (
-              <div className="border border-dashed rounded-xl p-6 text-center text-sm text-gray-500">
-                No slides configured. Click "Add Slide" to create the first banner entry.
-              </div>
-            )}
-          </div>
-
-          <div className="lg:flex-1">
-            {selectedSlideId && selectedSlide ? (
-              <div className="space-y-4 border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Slide Details</h3>
-                  <span className="text-xs text-gray-500">ID: {selectedSlideId}</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm text-gray-700 mb-1">Image URL</label>
-                    <input
-                      className="w-full border px-3 py-2 rounded"
-                      value={slideImage}
-                      onChange={e => setSlideImage(e.target.value)}
-                      placeholder="https://.../image.jpg"
-                    />
-                    <div className="mt-2 text-sm text-gray-500">Or upload an image when publishing to the API</div>
-                    <input type="file" accept="image/*" onChange={e => setSlideImageFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)} className="mt-2" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">Highlight Tag</label>
-                    <input
-                      className="w-full border px-3 py-2 rounded"
-                      value={slideHighlight}
-                      onChange={e => setSlideHighlight(e.target.value)}
-                      placeholder="E.g. ECO FRIENDLY"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm text-gray-700 mb-1">Title</label>
-                    <input
-                      className="w-full border px-3 py-2 rounded"
-                      value={slideTitle}
-                      onChange={e => setSlideTitle(e.target.value)}
-                      placeholder="Main headline"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm text-gray-700 mb-1">Description</label>
-                    <textarea
-                      className="w-full border px-3 py-2 rounded"
-                      rows={4}
-                      value={slideDescription}
-                      onChange={e => setSlideDescription(e.target.value)}
-                      placeholder="Supporting copy shown beneath the titles"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-3 justify-end">
-                  <button onClick={handlePublishToApi} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700" disabled={apiLoading}>{apiLoading ? 'Publishing...' : 'Publish to API'}</button>
-                  <button onClick={handleDeleteFromApi} className="px-4 py-2 border rounded-md shadow-sm text-red-600 hover:bg-red-50" disabled={apiLoading}>Delete from API</button>
-                  <button onClick={handleLoadFromApi} className="px-4 py-2 border rounded-md shadow-sm" disabled={apiLoading}>{apiLoading ? 'Loading...' : 'Load From API'}</button>
-                </div>
-              </div>
-            ) : (
+            {workingHours.length === 0 && (
               <div className="border border-dashed rounded-2xl p-6 text-center text-sm text-gray-500">
-                Select a slide from the list to edit its content.
+                No working hours configured. Add a new entry above.
               </div>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Working Hours</h2>
-          </div>
-         
-        </div>
-
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-4">
-          <input
-            className="border px-3 py-2 rounded md:flex-1"
-            placeholder="Day (e.g. Monday)"
-            value={workingDayInput}
-            onChange={e => setWorkingDayInput(e.target.value)}
-          />
-          <input
-            className="border px-3 py-2 rounded md:flex-1"
-            placeholder="Hours (e.g. 9:00 AM - 6:00 PM)"
-            value={workingHoursInput}
-            onChange={e => setWorkingHoursInput(e.target.value)}
-          />
-          <select
-            className="border px-3 py-2 rounded md:w-40"
-            value={workingStatusInput}
-            onChange={e => setWorkingStatusInput(e.target.value === 'closed' ? 'closed' : 'open')}
-          >
-            <option value="open">Open</option>
-            <option value="closed">Closed</option>
-          </select>
-          <button
-            onClick={handleAddWorkingHour}
-            className="px-4 py-2 bg-teal-600 text-white rounded-md shadow-sm hover:bg-teal-700 md:w-auto"
-            disabled={!workingDayInput.trim() || !workingHoursInput.trim()}
-          >
-            Add Entry
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          {workingHours.map(entry => (
-            <div key={entry.id} className="flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-2xl p-4">
-              <div className="w-full md:w-48">
-                <label className="block text-xs font-medium text-gray-600 mb-1">Day</label>
-                <input
-                  className="w-full border px-3 py-2 rounded"
-                  value={entry.day}
-                  onChange={e => handleWorkingHourChange(entry.id, 'day', e.target.value)}
-                />
-              </div>
-              <div className="w-full md:flex-1">
-                <label className="block text-xs font-medium text-gray-600 mb-1">Hours</label>
-                <input
-                  className="w-full border px-3 py-2 rounded"
-                  value={entry.hours}
-                  onChange={e => handleWorkingHourChange(entry.id, 'hours', e.target.value)}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
-                  <select
-                    className="border px-3 py-2 rounded"
-                    value={entry.status}
-                    onChange={e => handleWorkingHourChange(entry.id, 'status', e.target.value)}
-                  >
-                    <option value="open">Open</option>
-                    <option value="closed">Closed</option>
-                  </select>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleUpdateWorkingHour(entry.id)} disabled={apiLoading} className="mt-5 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    {apiLoading ? 'Saving...' : 'Save'}
-                  </button>
-                  <button onClick={() => handleDeleteWorkingHour(entry.id)} className="mt-5 px-3 py-2 border rounded text-red-600 hover:bg-red-50">
-                    Delete
-                  </button>
-                </div>
-              </div>
+      {tab === 'facts' && (
+        <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Facts & Figures</h2>
+              <p className="text-sm text-gray-600">Control the statistics that appear on the homepage highlights panel.</p>
             </div>
-          ))}
-          {workingHours.length === 0 && (
-            <div className="border border-dashed rounded-2xl p-6 text-center text-sm text-gray-500">
-              No working hours configured. Add a new entry above.
+            <button onClick={clearFacts} className="px-4 py-2 border rounded-md shadow-sm hover:bg-gray-50">Clear All</button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input className="border px-3 py-2 rounded" placeholder="Label (e.g. Projects)" value={factLabel} onChange={e => setFactLabel(e.target.value)} />
+            <input className="border px-3 py-2 rounded" placeholder="Number (e.g. 120)" value={factValue} onChange={e => setFactValue(e.target.value)} />
+            <div className="flex gap-2">
+              <button onClick={addFact} className="px-3 py-1 bg-teal-600 text-white rounded">Add</button>
             </div>
-          )}
-        </div>
-      </section>
-
-      <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Facts & Figures</h2>
-            <p className="text-sm text-gray-600">Control the statistics that appear on the homepage highlights panel.</p>
           </div>
-          <button onClick={clearFacts} className="px-4 py-2 border rounded-md shadow-sm hover:bg-gray-50">Clear All</button>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input className="border px-3 py-2 rounded" placeholder="Label (e.g. Projects)" value={factLabel} onChange={e => setFactLabel(e.target.value)} />
-          <input className="border px-3 py-2 rounded" placeholder="Number (e.g. 120)" value={factValue} onChange={e => setFactValue(e.target.value)} />
-          <div className="flex gap-2">
-            <button onClick={addFact} className="px-3 py-1 bg-teal-600 text-white rounded">Add</button>
+          <div className="space-y-3">
+            {facts.map(f => (
+              <div key={f.id} className="flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-2xl p-4">
+                <input className="w-full md:flex-1 border px-3 py-2 rounded" value={f.label} onChange={e => updateFact(f.id, e.target.value, f.value)} placeholder="Label" />
+                <input className="w-full md:w-40 border px-3 py-2 rounded" value={f.value} onChange={e => updateFact(f.id, f.label, e.target.value)} placeholder="Value" />
+                <button onClick={() => deleteFact(f.id)} className="px-3 py-2 border rounded text-red-600 hover:bg-red-50">Delete</button>
+              </div>
+            ))}
+            {facts.length === 0 && <div className="text-sm text-gray-500">No facts defined.</div>}
           </div>
-        </div>
-
-        <div className="space-y-3">
-          {facts.map(f => (
-            <div key={f.id} className="flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-2xl p-4">
-              <input className="w-full md:flex-1 border px-3 py-2 rounded" value={f.label} onChange={e => updateFact(f.id, e.target.value, f.value)} placeholder="Label" />
-              <input className="w-full md:w-40 border px-3 py-2 rounded" value={f.value} onChange={e => updateFact(f.id, f.label, e.target.value)} placeholder="Value" />
-              <button onClick={() => deleteFact(f.id)} className="px-3 py-2 border rounded text-red-600 hover:bg-red-50">Delete</button>
-            </div>
-          ))}
-          {facts.length === 0 && <div className="text-sm text-gray-500">No facts defined.</div>}
-        </div>
-      </section>
-
-      <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Why Choose Us</h2>
-            <p className="text-sm text-gray-600">Edit the bullet points that communicate your core advantages.</p>
-          </div>
-          <button onClick={clearWhy} className="px-4 py-2 border rounded-md shadow-sm hover:bg-gray-50">Clear All</button>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input className="flex-1 border px-3 py-2 rounded" placeholder="Short bullet" value={whyInput} onChange={e => setWhyInput(e.target.value)} />
-          <button onClick={addWhy} className="px-4 py-2 bg-teal-600 text-white rounded-md shadow-sm hover:bg-teal-700">Add</button>
-        </div>
-
-        <ol className="list-decimal list-inside space-y-3">
-          {why.map((w, idx) => (
-            <li key={idx} className="flex items-start justify-between gap-3 border border-gray-200 rounded-2xl p-4">
-              <div className="flex-1 text-sm text-gray-800">{w}</div>
-              <button onClick={() => deleteWhy(idx)} className="px-3 py-2 border rounded text-red-600 hover:bg-red-50">Delete</button>
-            </li>
-          ))}
-          {why.length === 0 && <div className="text-sm text-gray-500">No items defined.</div>}
-        </ol>
-      </section>
+        </section>
+      )}
     </div>
   );
 }
