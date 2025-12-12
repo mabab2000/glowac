@@ -10,16 +10,13 @@ const Header: React.FC = () => {
   const hoverTimeout = useRef<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const serviceGroups: { [key: string]: { title: string; href: string; desc?: string }[] } = {
-    'Geotechnical': [
-      { title: 'Geotechnical Service 1', href: '/services/geotechnical/service1', desc: 'Soil analysis and testing.' },
-      { title: 'Geotechnical Service 2', href: '/services/geotechnical/service2', desc: 'Foundation studies.' },
-    ],
-    'Other Service': [
-      { title: 'Other Service 1', href: '/services/other/service1', desc: 'Consulting services.' },
-      { title: 'Other Service 2', href: '/services/other/service2', desc: 'Site inspection.' },
-    ],
-  };
+  type MainService = { id: number; service_name: string };
+  type SubService = { id: number; main_service_id: number; service_name: string; description?: string };
+
+  const [mainServices, setMainServices] = useState<MainService[]>([]);
+  const [currentSubServices, setCurrentSubServices] = useState<SubService[]>([]);
+  const [currentMainId, setCurrentMainId] = useState<number | null>(null);
+  const subServicesCache = useRef<Record<number, SubService[]>>({});
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false); // mobile submenu
 
   const links = [
@@ -52,6 +49,24 @@ const Header: React.FC = () => {
 
     return () => document.removeEventListener('mousedown', handleDocClick);
   }, [servicesOpen]);
+
+  // load main services on mount
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('https://glowac-api.onrender.com/main-services', { headers: { accept: 'application/json' } });
+        if (!mounted) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data)) return;
+        setMainServices(data.map((r: any) => ({ id: Number(r.id), service_name: String(r.service_name ?? '') })));
+      } catch (err) {
+        console.debug('Header: failed to load main services', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -109,32 +124,61 @@ const Header: React.FC = () => {
                               {/* Left: vertical list */}
                               <div className="w-72 pr-2">
                                 <ul className="flex flex-col">
-                                  {Object.entries(serviceGroups).map(([group, items]) => (
-                                    <li key={group} className="last:border-b-0 relative group">
+                                  {mainServices.map((m) => (
+                                    <li key={m.id} className="last:border-b-0 relative group">
                                       <button
                                         type="button"
                                         onClick={(e) => {
                                           e.preventDefault();
-                                          // toggle this group's subpanel
-                                          setSelectedService(prev => prev === group ? null : group);
+                                          // toggle selection
+                                          const asSelected = selectedService === String(m.id) ? null : String(m.id);
+                                          setSelectedService(asSelected);
+                                          setCurrentMainId(asSelected ? m.id : null);
+                                          // load sub-services (cached)
+                                          if (asSelected) {
+                                            if (subServicesCache.current[m.id]) {
+                                              setCurrentSubServices(subServicesCache.current[m.id]);
+                                            } else {
+                                              (async () => {
+                                                try {
+                                                  const res = await fetch(`https://glowac-api.onrender.com/sub-services/by-main/${m.id}`, { headers: { Accept: 'application/json' } });
+                                                  if (!res.ok) return;
+                                                  const data = await res.json();
+                                                  if (!Array.isArray(data)) return;
+                                                  const mapped = data.map((r: any) => ({ id: Number(r.id), main_service_id: Number(r.main_service_id ?? m.id), service_name: String(r.service_name ?? ''), description: typeof r.description === 'string' ? r.description : undefined }));
+                                                  subServicesCache.current[m.id] = mapped;
+                                                  setCurrentSubServices(mapped);
+                                                } catch (err) {
+                                                  console.debug('Failed to load sub-services', err);
+                                                }
+                                              })();
+                                            }
+                                          } else {
+                                            setCurrentSubServices([]);
+                                          }
                                         }}
-                                        className={`w-full text-left block px-4 py-2 text-teal-800 hover:bg-teal-50 transition-colors duration-150 ${selectedService === group ? 'bg-teal-50 font-semibold' : 'font-medium text-teal-700'}`}
+                                        className={`w-full text-left block px-4 py-2 text-teal-800 hover:bg-teal-50 transition-colors duration-150 ${selectedService === String(m.id) ? 'bg-teal-50 font-semibold' : 'font-medium text-teal-700'}`}
                                       >
-                                        {group}
+                                        {m.service_name}
                                       </button>
 
-                                      {selectedService === group && (
+                                      {selectedService === String(m.id) && (
                                         <ul className="absolute left-full top-0 bg-white border border-gray-200 shadow-lg rounded-md w-64 z-40">
-                                          {items.map((s) => (
-                                            <li key={s.href} className="border-b last:border-b-0">
-                                              <Link
-                                                to={s.href}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"
-                                              >
-                                                {s.title}
-                                              </Link>
-                                            </li>
-                                          ))}
+                                          {currentSubServices.map((s) => {
+                                            const mainSlug = m.service_name.toLowerCase().replace(/\s+/g, '-');
+                                            const subSlug = s.service_name.toLowerCase().replace(/\s+/g, '-');
+                                            const href = `/services/${mainSlug}/${subSlug}`;
+                                            return (
+                                              <li key={s.id} className="border-b last:border-b-0">
+                                                <Link
+                                                  to={href}
+                                                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50"
+                                                >
+                                                  {s.service_name}
+                                                </Link>
+                                              </li>
+                                            );
+                                          })}
                                         </ul>
                                       )}
                                     </li>
@@ -242,8 +286,16 @@ const Header: React.FC = () => {
                       </button>
 
                       <div id="mobile-services-submenu" className={`${mobileServicesOpen ? 'block' : 'hidden'} pl-6 mt-1 flex flex-col gap-1` }>
-                        <Link to="/services/geotechnical" className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">Geotechnical</Link>
-                        <Link to="/services/other" className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">Other Service</Link>
+                        {mainServices.length === 0 ? (
+                          <div className="p-3 border rounded text-center text-sm text-gray-500">Loading...</div>
+                        ) : (
+                          mainServices.map(m => {
+                            const slug = m.service_name.toLowerCase().replace(/\s+/g, '-');
+                            return (
+                              <Link key={m.id} to={`/services/${slug}`} className="px-3 py-2 text-gray-300 hover:text-teal-400 hover:bg-gray-800/50 rounded-md">{m.service_name}</Link>
+                            );
+                          })
+                        )}
                       </div>
                     </div>
                   );

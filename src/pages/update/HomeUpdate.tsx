@@ -192,11 +192,27 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
       }
     };
     load();
-    // Facts, why, working hours remain localStorage
-    try {
-      const f = localStorage.getItem('home.facts');
-      setFacts(f ? JSON.parse(f) : []);
-    } catch { setFacts([]); }
+    // Facts: try load from API `/facts`, fallback to localStorage
+    (async () => {
+      try {
+        const res = await fetch('https://glowac-api.onrender.com/facts', { headers: { Accept: 'application/json' } });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            const mapped: Fact[] = data.map((r: any) => ({ id: String(r.id ?? Date.now()), label: String(r.label ?? ''), value: String(r.number ?? '') }));
+            setFacts(mapped);
+            try { localStorage.setItem('home.facts', JSON.stringify(mapped)); } catch {}
+            return;
+          }
+        }
+      } catch (err) {
+        console.debug('Failed to load facts from API, falling back to localStorage', err);
+      }
+      try {
+        const f = localStorage.getItem('home.facts');
+        setFacts(f ? JSON.parse(f) : []);
+      } catch { setFacts([]); }
+    })();
     try {
       const w = localStorage.getItem('home.why');
       setWhy(w ? JSON.parse(w) : []);
@@ -636,15 +652,84 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
 
   // Facts actions
   const addFact = () => {
-    if (!factLabel.trim() || !factValue.trim()) return;
-    const id = Date.now().toString();
-    persistFacts([...facts, { id, label: factLabel.trim(), value: factValue.trim() }]);
-    setFactLabel('');
-    setFactValue('');
+    const label = factLabel.trim();
+    const numberRaw = factValue.trim();
+    if (!label || !numberRaw) return;
+    // POST to API /facts using x-www-form-urlencoded
+    (async () => {
+      setApiLoading(true);
+      setApiError(null);
+      try {
+        const body = new URLSearchParams();
+        body.append('label', label);
+        // try convert to number if possible
+        const num = Number(numberRaw);
+        body.append('number', Number.isNaN(num) ? numberRaw : String(num));
+        body.append('status', 'Visible');
+        const res = await fetch('https://glowac-api.onrender.com/facts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+          body: body.toString(),
+        });
+        if (!res.ok) throw new Error('Failed to create fact');
+        // refresh from API
+        const ref = await fetch('https://glowac-api.onrender.com/facts', { headers: { Accept: 'application/json' } });
+        if (ref.ok) {
+          const data = await ref.json();
+          if (Array.isArray(data)) {
+            const mapped: Fact[] = data.map((r: any) => ({ id: String(r.id ?? Date.now()), label: String(r.label ?? ''), value: String(r.number ?? '') }));
+            setFacts(mapped);
+            try { localStorage.setItem('home.facts', JSON.stringify(mapped)); } catch {}
+          }
+        }
+        setFactLabel('');
+        setFactValue('');
+      } catch (err) {
+        console.error('Failed to add fact', err);
+        setApiError('Failed to add fact');
+        // fallback to local add
+        const id = Date.now().toString();
+        persistFacts([...facts, { id, label, value: numberRaw }]);
+        setFactLabel('');
+        setFactValue('');
+      } finally {
+        setApiLoading(false);
+      }
+    })();
   };
 
   const deleteFact = (id: string) => {
-    persistFacts(facts.filter(f => f.id !== id));
+    // attempt API delete, fall back to local removal
+    (async () => {
+      setApiLoading(true);
+      setApiError(null);
+      try {
+        // if id looks numeric, call API
+        if (/^\d+$/.test(id)) {
+          const res = await fetch(`https://glowac-api.onrender.com/facts/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            const ref = await fetch('https://glowac-api.onrender.com/facts', { headers: { Accept: 'application/json' } });
+            if (ref.ok) {
+              const data = await ref.json();
+              if (Array.isArray(data)) {
+                const mapped: Fact[] = data.map((r: any) => ({ id: String(r.id ?? Date.now()), label: String(r.label ?? ''), value: String(r.number ?? '') }));
+                setFacts(mapped);
+                try { localStorage.setItem('home.facts', JSON.stringify(mapped)); } catch {}
+                return;
+              }
+            }
+          } else {
+            // if API delete failed, throw and fallback
+            throw new Error('API delete failed');
+          }
+        }
+      } catch (err) {
+        console.debug('Delete fact API failed, falling back to local', err);
+        persistFacts(facts.filter(f => f.id !== id));
+      } finally {
+        setApiLoading(false);
+      }
+    })();
   };
 
   const clearFacts = () => {
@@ -653,7 +738,41 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
   };
 
   const updateFact = (id: string, label: string, value: string) => {
-    persistFacts(facts.map(f => f.id === id ? { ...f, label, value } : f));
+    // attempt PUT to API if id numeric, else persist locally
+    (async () => {
+      setApiLoading(true);
+      setApiError(null);
+      try {
+        if (/^\d+$/.test(id)) {
+          const body = new URLSearchParams();
+          body.append('label', label);
+          const num = Number(value);
+          body.append('number', Number.isNaN(num) ? value : String(num));
+          body.append('status', 'Visible');
+          const res = await fetch(`https://glowac-api.onrender.com/facts/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+            body: body.toString(),
+          });
+          if (!res.ok) throw new Error('Failed to update fact');
+          const ref = await fetch('https://glowac-api.onrender.com/facts', { headers: { Accept: 'application/json' } });
+          if (ref.ok) {
+            const data = await ref.json();
+            if (Array.isArray(data)) {
+              const mapped: Fact[] = data.map((r: any) => ({ id: String(r.id ?? Date.now()), label: String(r.label ?? ''), value: String(r.number ?? '') }));
+              setFacts(mapped);
+              try { localStorage.setItem('home.facts', JSON.stringify(mapped)); } catch {}
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to update fact via API, falling back', err);
+        persistFacts(facts.map(f => f.id === id ? { ...f, label, value } : f));
+      } finally {
+        setApiLoading(false);
+      }
+    })();
   };
 
   // Why actions

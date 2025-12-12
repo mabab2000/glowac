@@ -114,6 +114,41 @@ const AboutUs: React.FC = () => {
     { id: 'sunday', day: 'Sunday', hours: 'Closed', status: 'closed' },
   ]);
 
+  type Fact = { id: string; label: string; value: string };
+  const [facts, setFacts] = useState<Fact[]>([
+    { id: 'clients', label: 'Clients', value: '43' },
+    { id: 'projects', label: 'Projects Completed', value: '143' },
+    { id: 'team', label: 'Team Members', value: '52' },
+    { id: 'tests', label: 'Tests We Conduct', value: '200+' },
+  ]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('https://glowac-api.onrender.com/facts', { headers: { Accept: 'application/json' } });
+        if (!mounted) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            const mapped: Fact[] = data.map((r: any) => ({ id: String(r.id ?? Date.now()), label: String(r.label ?? ''), value: String(r.number ?? r.value ?? '') }));
+            setFacts(mapped);
+            try { localStorage.setItem('home.facts', JSON.stringify(mapped)); } catch {}
+            return;
+          }
+        }
+      } catch (err) {
+        console.debug('AboutUs: failed to load facts from API', err);
+      }
+      // fallback: try localStorage
+      try {
+        const stored = localStorage.getItem('home.facts');
+        if (stored) setFacts(JSON.parse(stored));
+      } catch {}
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -220,30 +255,14 @@ const AboutUs: React.FC = () => {
             <div className="w-20 h-1 bg-teal-500 mx-auto"></div>
           </div>
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="group bg-white border-2 border-teal-300 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-center">
-              <div className="text-5xl lg:text-6xl font-bold text-teal-600 mb-4 group-hover:scale-110 transition-transform duration-300">
-                43
+            {facts.map(f => (
+              <div key={f.id} className="group bg-white border-2 border-teal-300 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-center">
+                <div className="text-5xl lg:text-6xl font-bold text-teal-600 mb-4 group-hover:scale-110 transition-transform duration-300">
+                  {f.value}
+                </div>
+                <p className="text-lg font-semibold text-gray-700">{f.label}</p>
               </div>
-              <p className="text-lg font-semibold text-gray-700">Clients</p>
-            </div>
-            <div className="group bg-white border-2 border-teal-300 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-center">
-              <div className="text-5xl lg:text-6xl font-bold text-teal-600 mb-4 group-hover:scale-110 transition-transform duration-300">
-                143
-              </div>
-              <p className="text-lg font-semibold text-gray-700">Projects Completed</p>
-            </div>
-            <div className="group bg-white border-2 border-teal-300 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-center">
-              <div className="text-5xl lg:text-6xl font-bold text-teal-600 mb-4 group-hover:scale-110 transition-transform duration-300">
-                52
-              </div>
-              <p className="text-lg font-semibold text-gray-700">Team Members</p>
-            </div>
-            <div className="group bg-white border-2 border-teal-300 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-center">
-              <div className="text-5xl lg:text-6xl font-bold text-teal-600 mb-4 group-hover:scale-110 transition-transform duration-300">
-                200+
-              </div>
-              <p className="text-lg font-semibold text-gray-700">Tests We Conduct</p>
-            </div>
+            ))}
           </div>
         </div>
 
