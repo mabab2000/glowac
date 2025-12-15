@@ -4,68 +4,40 @@ import React, { useState, useEffect, useRef } from 'react';
 
 
 const InteractivePolicy: React.FC = () => {
-  const [tab, setTab] = useState<'values' | 'mission' | 'version'>('values');
-
   return (
-    <div>
-      <div className="flex gap-2 mb-4" role="tablist" aria-label="Policy sections">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'values'}
-          onClick={() => setTab('values')}
-          className={`px-4 py-2 rounded-none ${tab === 'values' ? 'bg-emerald-600 text-white' : 'bg-white border border-emerald-200 text-emerald-700'}`}>
-          Core Values
-        </button>
+    <div className="space-y-6">
+      <h3 className="text-2xl font-semibold text-green-700"> Corevalues, Mission and Vision</h3>
 
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'mission'}
-          onClick={() => setTab('mission')}
-          className={`px-4 py-2 rounded-none ${tab === 'mission' ? 'bg-emerald-600 text-white' : 'bg-white border border-emerald-200 text-emerald-700'}`}>
-          Mission
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'version'}
-          onClick={() => setTab('version')}
-          className={`px-4 py-2 rounded-none ${tab === 'version' ? 'bg-emerald-600 text-white' : 'bg-white border border-emerald-200 text-emerald-700'}`}>
-          Vision
-        </button>
+      <div className="p-6 border border-emerald-200 rounded-none bg-white">
+        <h4 className="text-xl font-semibold mb-2 text-gray-700">Core Values</h4>
+        <div className="text-gray-500 text-justify">
+          <ul className="list-disc pl-5 space-y-2">
+            <li className="font-medium">We comply with ISO/IEC 17025:2017 and pursue continual improvement of our management system through third‑party assessments, internal audits, management reviews, and an effective corrective action process.</li>
+            <li className="font-medium">We maintain a proactive, customer‑focused approach to ensure our testing consistently meets or exceeds customer requirements in a safe and timely manner.</li>
+            <li className="font-medium">We uphold good laboratory and professional practices to ensure dependable, high‑quality testing services.</li>
+            <li className="font-medium">All tests and services are performed in accordance with recognized standardized methods and/or specific customer requirements.</li>
+            <li className="font-medium">Top management demonstrates commitment to developing, implementing, and continually improving the management system, and formally endorses this Quality Policy and the Quality Manual.</li>
+            <li className="font-medium">This policy applies to all personnel and activities at GLOWAC Laboratory.</li>
+          </ul>
+        </div>
       </div>
 
-      <div className="p-6 border border-emerald-200 rounded-none bg-white text-justify">
-        {tab === 'values' && (
-          <div className="text-gray-800">
-            <ul className="list-disc pl-5 space-y-2">
-              <li className="font-semibold">We comply with ISO/IEC 17025:2017 and pursue continual improvement of our management system through third‑party assessments, internal audits, management reviews, and an effective corrective action process.</li>
-              <li className="font-semibold">We maintain a proactive, customer‑focused approach to ensure our testing consistently meets or exceeds customer requirements in a safe and timely manner.</li>
-              <li className="font-semibold">We uphold good laboratory and professional practices to ensure dependable, high‑quality testing services.</li>
-              <li className="font-semibold">All tests and services are performed in accordance with recognized standardized methods and/or specific customer requirements.</li>
-              <li className="font-semibold">Top management demonstrates commitment to developing, implementing, and continually improving the management system, and formally endorses this Quality Policy and the Quality Manual.</li>
-              <li className="font-semibold">This policy applies to all personnel and activities at GLOWAC Laboratory.</li>
-            </ul>
-          </div>
-        )}
+      <div className="p-6 border border-emerald-200 rounded-none bg-white">
+        <h4 className="text-xl font-semibold mb-2 text-gray-700">Mission</h4>
+        <div className="text-gray-500 text-justify">
+          <p className="leading-relaxed font-medium">
+            Glowac Laboratory's mission is to deliver accurate, reliable, and timely testing services that support safe and sustainable construction and engineering projects. We prioritize customer needs, continual improvement, and adherence to recognized standards so our results are defensible and trusted.
+          </p>
+        </div>
+      </div>
 
-        {tab === 'mission' && (
-          <div className="text-gray-800">
-            <p className="leading-relaxed font-semibold">
-              Glowac Laboratory's mission is to deliver accurate, reliable, and timely testing services that support safe and sustainable construction and engineering projects. We prioritize customer needs, continual improvement, and adherence to recognized standards so our results are defensible and trusted.
-            </p>
-          </div>
-        )}
-
-        {tab === 'version' && (
-          <div className="text-gray-800">
-            <p className="font-semibold leading-relaxed">
-              To be the leading geotechnical and environmental laboratory, recognized for excellence in testing services, innovative solutions, and unwavering commitment to quality and customer satisfaction.
-            </p>
-          </div>
-        )}
+      <div className="p-6 border border-emerald-200 rounded-none bg-white">
+        <h4 className="text-xl font-semibold mb-2 text-gray-700">Vision</h4>
+        <div className="text-gray-500 text-justify">
+          <p className="font-medium leading-relaxed">
+            To be the leading geotechnical and environmental laboratory, recognized for excellence in testing services, innovative solutions, and unwavering commitment to quality and customer satisfaction.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -108,13 +80,13 @@ const CEOCard: React.FC = () => {
     };
   }, []);
 
-  return (
-    <div className="mb-8">
+    return (
+      <div className="mb-8 -mx-4 sm:mx-0 px-4 sm:px-0">
       <div className="bg-white border border-emerald-200 overflow-hidden rounded-none flex flex-col md:flex-row items-stretch">
         {loading ? (
-          <div className="w-full flex flex-col md:flex-row items-center md:items-stretch gap-6 p-6">
-            <div className="md:w-2/5 flex-shrink-0">
-              <div className="w-full h-64 md:h-full bg-gray-200 animate-pulse" />
+          <div className="w-full flex flex-col md:flex-row items-stretch gap-4 md:gap-6 p-4 md:p-6">
+            <div className="w-full md:w-2/5 flex-shrink-0">
+              <div className="w-full h-56 md:h-full bg-gray-200 animate-pulse" />
             </div>
             <div className="p-4 md:w-3/5 text-left">
               <div className="h-8 bg-gray-200 rounded w-1/2 mb-3 animate-pulse" />
@@ -132,10 +104,10 @@ const CEOCard: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="md:w-2/5 flex-shrink-0">
-              <img src={ceo.img} alt={`CEO - ${ceo.name}`} className="w-full h-64 md:h-full object-cover" />
+            <div className="w-full md:w-2/5 flex-shrink-0">
+              <img src={ceo.img} alt={`CEO - ${ceo.name}`} className="w-full h-56 md:h-full object-cover" />
             </div>
-            <div className="p-8 md:w-3/5 text-left flex flex-col justify-center">
+            <div className="p-6 md:p-8 md:w-3/5 text-left flex flex-col justify-center">
               <h3 className="text-3xl font-bold text-emerald-700">{ceo.name}</h3>
               <p className="text-emerald-600 font-semibold mt-1">{ceo.title}</p>
               <p className="text-gray-600 text-justify mt-3">{ceo.desc}</p>
@@ -178,9 +150,9 @@ const AboutPage: React.FC = () => {
   }, []);
 
   return (
-    <main className="pt-24">
+    <main className="pt-24 max-w-[62rem] mx-auto">
       {/* Full-bleed dashed area */}
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-3">
+      <div className="max-w-[62rem] mx-auto px-0 sm:px-4 lg:px-8">
         <div className="w-full lg:max-w-4xl mx-auto">
             <div className="bg-emerald-100 rounded-none text-center p-3 mt-0">
             <h1 className="text-3xl font-bold text-emerald-600 mb-2">{aboutTitle}</h1>
@@ -189,10 +161,10 @@ const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-0">
+      <div className="max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 mt-0">
         {/* Background section */}
         <section className="mt-0">
-          <div className="w-full lg:max-w-4xl mx-auto">
+          <div className="w-full lg:max-w-[calc(62rem)] mx-auto">
             <div className="p-8 rounded-none shadow-sm text-justify">
             <h2 className="text-2xl font-semibold text-bold-700 mb-3">Background</h2>
             <div className="text-gray-700 leading-relaxed space-y-4">
@@ -217,15 +189,15 @@ const AboutPage: React.FC = () => {
         {/* Quality Policy card */}
         {/* Interactive Core Values / Mission / Version section (not cards) */}
         <section className="mt-2">
-          <div className="w-full lg:max-w-4xl mx-auto">
+          <div className="w-full lg:max-w-[calc(62rem)] mx-auto">
             <InteractivePolicy />
           </div>
         </section>
 
         {/* Environmental Lab section */}
-        <section className="mt-12">
-          <div className="w-full lg:max-w-4xl mx-auto">
-            <div className="p-8 rounded-none border border-emerald-200 bg-white shadow-sm">
+        <section className="mt-12 sm:w-full">
+          <div className="w-full mx-0 px-4 sm:w-full lg:mx-auto lg:px-0 lg:max-w-[calc(62rem)]">
+            <div className="p-6 lg:p-8 rounded-none border sm:w-full border-emerald-200 bg-white shadow-sm">
               <h2 className="text-2xl font-semibold text-emerald-700 mb-6 text-center">ENVIRONMENTAL LAB</h2>
               
               <div className="mb-6">
@@ -239,8 +211,8 @@ const AboutPage: React.FC = () => {
 
         {/* Contact Our Team section */}
         <section className="mt-6">
-          <div className="w-full lg:max-w-4xl mx-auto">
-            <div className="p-8 rounded-none">
+          <div className="w-full mx-0 px-4 lg:mx-auto lg:px-0 lg:max-w-[calc(62rem)]">
+            <div className="p-6 lg:p-8 rounded-none">
                   <h2 className="text-4xl font-bold mb-8 text-center">CONTACT OUR TEAM</h2>
 
                           <CEOCard />
@@ -349,8 +321,8 @@ const TeamCarousel: React.FC = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[1, 2, 3].map((n) => (
-          <div key={n} className="bg-white border border-emerald-200 rounded-none p-4 animate-pulse">
-            <div className="w-full h-40 bg-gray-200 mb-4" />
+          <div key={n} className=" border border-emerald-200 rounded-none p-4 animate-pulse">
+            <div className="w-full h-4 mb-4" />
             <div className="h-6 bg-gray-200 w-3/4 mb-2" />
             <div className="h-4 bg-gray-200 w-1/2" />
           </div>
@@ -373,7 +345,7 @@ const TeamCarousel: React.FC = () => {
         aria-hidden="true">
         {items.map((m, idx) => (
           <div key={`${m.email}-${idx}`} className="flex-none min-w-[80%] sm:min-w-[50%] lg:min-w-[33.333%] bg-white border border-emerald-200 rounded-none text-center overflow-hidden pointer-events-auto">
-            <img src={m.img} alt={m.name} className="w-full h-48 object-cover border-b border-emerald-300" />
+            <img src={m.img} alt={m.name} className="w-48 h-48 object-cover border-b border-emerald-300 mx-auto" />
             <div className="p-6">
               <h3 className="text-lg font-semibold text-emerald-700 mb-2">{m.name}</h3>
               <p className="text-gray-600 text-sm mb-3">{m.title}</p>

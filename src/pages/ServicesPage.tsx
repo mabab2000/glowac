@@ -2,6 +2,46 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { RequestServiceCards } from '../components/AboutUs';
 
+// Table for selecting a test row
+type TestRow = {
+  id: number;
+  test_name: string;
+  description?: string;
+};
+
+const TestSelectionTable: React.FC<{ tests: TestRow[] }> = ({ tests }) => {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full border border-emerald-200 rounded shadow-sm">
+        <thead>
+          <tr className="bg-emerald-50">
+            <th className="px-4 py-2 text-left font-semibold text-emerald-700">Test Name</th>
+            <th className="px-4 py-2 text-left font-semibold text-emerald-700">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tests.map(t => (
+            <tr
+              key={t.id}
+              className={
+                `cursor-pointer transition-colors ${selectedId === t.id ? 'bg-emerald-100/80' : 'hover:bg-emerald-50'}`
+              }
+              onClick={() => setSelectedId(t.id)}
+            >
+              <td className="px-4 py-2 font-medium text-emerald-900">{t.test_name}</td>
+              <td className="px-4 py-2 text-gray-700 text-sm">{(t.description && String(t.description).trim().toLowerCase() !== 'string') ? t.description : ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {selectedId && (
+        <div className="mt-3 text-emerald-700 text-sm">Selected: <span className="font-semibold">{tests.find(t => t.id === selectedId)?.test_name}</span></div>
+      )}
+    </div>
+  );
+};
+
 const ServicesPage: React.FC = () => {
   const location = useLocation();
   // state for dynamic services/tests
@@ -148,19 +188,11 @@ const ServicesPage: React.FC = () => {
                     {tests.length === 0 ? (
                       <div className="text-sm text-gray-500">No tests found for this sub-service.</div>
                     ) : (
-                      <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                        {tests.map(t => (
-                          <li key={t.id} className="">
-                            <div className="font-semibold">{t.test_name}</div>
-                            {(t.description && String(t.description).trim().toLowerCase() !== 'string') && (
-                              <div className="text-sm text-gray-600">{t.description}</div>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                      <TestSelectionTable tests={tests} />
                     )}
                   </div>
                 )}
+
               </div>
             </div>
           ) : (

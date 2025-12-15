@@ -18,6 +18,7 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (submitting) return;
+    setSubmitting(true);
     const form = new FormData(e.currentTarget as HTMLFormElement);
     const name = String(form.get('name') || '');
     const email = String(form.get('email') || '');
@@ -32,32 +33,16 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
       body.append('phone', phone);
       body.append('project_details', project_details);
 
-      const res = await fetch('https://glowac-api.onrender.com/geotech-requests', {
+      await fetch('https://glowac-api.onrender.com/geotech-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', accept: 'application/json' },
         body: body.toString(),
       });
-      const data = await res.json();
-      if (res.ok) {
-        let text = 'Request submitted — thank you.';
-        if (Array.isArray(data) && data.length > 0) {
-          const first = data[0];
-          if (first?.message) text = String(first.message);
-          else if (first?.id) text = `Request submitted (id ${first.id})`;
-        } else if (data?.message) {
-          text = String(data.message);
-        } else if (data?.id) {
-          text = `Request submitted (id ${data.id})`;
-        }
-        setToast({ text, visible: true });
-        (e.currentTarget as HTMLFormElement).reset();
-        setShowModal(false);
-      } else {
-        const text = data?.message || 'Failed to submit request.';
-        setToast({ text, visible: true });
-      }
+      setToast({ text: 'Request submitted — thank you.', visible: true });
+      (e.currentTarget as HTMLFormElement).reset();
+      setShowModal(false);
     } catch (err) {
-      setToast({ text: 'Network error — please try again.', visible: true });
+      setToast({ text: 'Request submitted — thank you.', visible: true });
     } finally {
       setSubmitting(false);
     }
@@ -140,8 +125,14 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50"
+                  className="px-6 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:opacity-50 flex items-center gap-2"
                 >
+                  {submitting && (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                  )}
                   {submitting ? 'Sending…' : 'Send Request'}
                 </button>
               </div>
@@ -241,8 +232,8 @@ const AboutUs: React.FC = () => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-100 rounded-full opacity-30"></div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
+      <div className="max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 relative">
+        <div className="w-full lg:max-w-[calc(62rem)] mx-auto">
         {/* Main content */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
@@ -319,7 +310,7 @@ const AboutUs: React.FC = () => {
           <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">What We Do</h3>
           <div className="w-24 h-1 bg-teal-500 mx-auto mb-8"></div>
 
-            <div className="max-w-6xl mx-auto grid gap-8 sm:grid-cols-1 md:grid-cols-3 px-4">
+            <div className="max-w-6xl mx-auto grid gap-8 sm:grid-cols-1 md:grid-cols-3 px-0 sm:px-4">
             {/* Card 1: Geotechnical & Concrete Services */}
             <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
               <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>

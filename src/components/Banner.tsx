@@ -48,7 +48,7 @@ type ApiBanner = {
   highlight_tag: string;
   title: string;
   description: string;
-  image_mime: string;
+  image_mime?: string;
   image_preview_url: string;
 };
 
@@ -100,7 +100,15 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
   // Build slidesToRender from apiBanners if available and memoize it
   const slidesToRender = useMemo(() => {
     if (apiBanners && apiBanners.length > 0) {
-      return apiBanners.map(b => ({ image: b.image_preview_url, title: b.title, subtitle: '', highlight: b.highlight_tag, description: b.description, cta: '' }));
+      return apiBanners.map(b => ({
+        image: b.image_preview_url,
+        title: b.title,
+        subtitle: '',
+        highlight: b.highlight_tag,
+        description: b.description,
+        cta: '',
+        mime: b.image_mime || ''
+      }));
     }
     return [];
   }, [apiBanners]);
@@ -140,7 +148,6 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
     slidesToRender.forEach((s, i) => {
       const url = s.image;
       if (loaded[url] === true) {
-        // If we've already successfully loaded this URL before, mark as loaded
         setImageStatus(prev => {
           const copy = prev.slice();
           copy[i] = true;
@@ -149,26 +156,52 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
         return;
       }
 
-      const img = new Image();
-      img.onload = () => {
-        if (!mounted) return;
-        loaded[url] = true;
-        setImageStatus(prev => {
-          const copy = prev.slice();
-          copy[i] = true;
-          return copy;
-        });
-      };
-      img.onerror = () => {
-        if (!mounted) return;
-        loaded[url] = false;
-        setImageStatus(prev => {
-          const copy = prev.slice();
-          copy[i] = false;
-          return copy;
-        });
-      };
-      img.src = url;
+      const isVideo = (s as any).mime?.startsWith('video') || typeof url === 'string' && url.toLowerCase().endsWith('.mp4');
+      if (isVideo) {
+        // Preload video metadata
+        const v = document.createElement('video');
+        v.preload = 'metadata';
+        v.onloadeddata = () => {
+          if (!mounted) return;
+          loaded[url] = true;
+          setImageStatus(prev => {
+            const copy = prev.slice();
+            copy[i] = true;
+            return copy;
+          });
+        };
+        v.onerror = () => {
+          if (!mounted) return;
+          loaded[url] = false;
+          setImageStatus(prev => {
+            const copy = prev.slice();
+            copy[i] = false;
+            return copy;
+          });
+        };
+        v.src = url;
+      } else {
+        const img = new Image();
+        img.onload = () => {
+          if (!mounted) return;
+          loaded[url] = true;
+          setImageStatus(prev => {
+            const copy = prev.slice();
+            copy[i] = true;
+            return copy;
+          });
+        };
+        img.onerror = () => {
+          if (!mounted) return;
+          loaded[url] = false;
+          setImageStatus(prev => {
+            const copy = prev.slice();
+            copy[i] = false;
+            return copy;
+          });
+        };
+        img.src = url;
+      }
     });
     return () => { mounted = false; };
   }, [slidesToRender]);
@@ -384,12 +417,45 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
         <div className="absolute inset-0 min-h-[70vh]">
           {slidesToRender.map((slide, i) => {
             const imgLoaded = imageStatus[i];
+            const isVideo = (slide as any).mime?.startsWith('video') || String(slide.image).toLowerCase().endsWith('.mp4');
+            if (isVideo) {
+              return (
+                <div
+                  key={String(slide.image) + i}
+                  data-slide-index={i}
+                  aria-hidden={current !== i}
+                  className={`absolute inset-0 transition-all duration-500 ease-out will-change-transform ${isTransitioning ? 'blur-sm scale-110' : ''}`}
+                  style={{
+                    backgroundColor: '#000',
+                    opacity: current === i ? 1 : 0,
+                    transform: current === i ? 'scale(1.05)' : 'scale(1.0)',
+                    filter: `blur(${blur}px) brightness(${current === i ? 0.85 : 0.6}) contrast(1.1)`,
+                    zIndex: current === i ? 2 : 1,
+                  }}
+                >
+                  {imgLoaded === false ? (
+                    <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-600" />
+                  ) : (
+                    <video
+                      src={String(slide.image)}
+                      className="w-full h-full object-cover absolute inset-0"
+                      autoPlay={current === i && playing}
+                      muted
+                      loop
+                      playsInline
+                    />
+                  )}
+                </div>
+              );
+            }
+
             const backgroundStyle = imgLoaded === false
               ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
               : `url(${slide.image})`;
+
             return (
               <div
-                key={slide.image + i}
+                key={String(slide.image) + i}
                 data-slide-index={i}
                 aria-hidden={current !== i}
                 className={`absolute inset-0 bg-center bg-cover transition-all duration-500 ease-out will-change-transform ${isTransitioning ? 'blur-sm scale-110' : ''}`}
@@ -456,7 +522,7 @@ const Banner: React.FC<{ slides?: typeof slidesData; admin?: boolean }> = ({ sli
             <input className="border px-3 py-2 rounded" placeholder="Highlight tag" value={highlightTag} onChange={e => setHighlightTag(e.target.value)} />
             <input className="border px-3 py-2 rounded" placeholder="Title" value={titleInput} onChange={e => setTitleInput(e.target.value)} />
             <textarea className="border px-3 py-2 rounded" placeholder="Description" rows={3} value={descriptionInput} onChange={e => setDescriptionInput(e.target.value)} />
-            <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)} />
+            <input type="file" accept="image/*,video/*" onChange={e => setImageFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)} />
             <div className="flex gap-2">
               <button type="submit" className="px-3 py-1 bg-teal-600 text-white rounded" disabled={actionLoading}>{editingId ? 'Update' : 'Create'}</button>
               <button type="button" className="px-3 py-1 border rounded" onClick={() => { setEditingId(null); setTitleInput(''); setDescriptionInput(''); setHighlightTag(''); setImageFile(null); }}>Reset</button>

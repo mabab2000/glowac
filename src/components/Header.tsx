@@ -20,6 +20,28 @@ const Header: React.FC = () => {
   // Track which mobile main service is open (by id), not just true/false
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false); // mobile submenu open
   const [mobileSelectedMain, setMobileSelectedMain] = useState<number | null>(null);
+  const [isLarge, setIsLarge] = useState<boolean>(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setIsLarge(mq.matches);
+    onChange();
+    try {
+      mq.addEventListener('change', onChange);
+    } catch (e) {
+      // Safari fallback
+      // @ts-ignore
+      mq.addListener(onChange);
+    }
+    return () => {
+      try {
+        mq.removeEventListener('change', onChange);
+      } catch (e) {
+        // @ts-ignore
+        mq.removeListener(onChange);
+      }
+    };
+  }, []);
 
   const links = [
     { href: '/', label: 'HOME' },
@@ -89,21 +111,19 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-0">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
           {/* bg-black and text-white only on mobile (lg:hidden), keep original on desktop */}
-          <div className="border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md py-0 bg-white lg:bg-gray-200 lg:text-black">
-          <div className="px-0 py-0">
-          <div className="grid grid-cols-3 items-stretch gap-4 h-20 md:h-24 lg:h-16">
-            
-
-            {/* Left: logo only */}
-              <div className="flex items-center justify-center px-3 h-full overflow-hidden">
-              <Link to="/" className="flex items-center h-full w-full overflow-hidden">
-                <img src="/logo.png" alt="GLOWAC logo" className="h-full w-40 object-contain block" />
+          <div className="border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md py-0 bg-white lg:bg-gray-200 lg:text-black m-0">
+          <div className="px-0 py-0 m-0">
+          <div className="flex items-center justify-between gap-4 h-20 md:h-24 lg:h-16">
+            <div className="flex items-left px-3 h-full">
+              {/* Logo (left) */}
+              <Link to="/" className="flex items-center h-full overflow-hidden">
+                <img src="/logo2.png" alt="GLOWAC " className="h-full w-40 object-contain block" />
               </Link>
             </div>
 
-            {/* Middle: navigation (centered on desktop) */}
-            <div className="flex items-center justify-center h-full">
-              <nav aria-label="Primary navigation" className="hidden lg:flex lg:items-center lg:space-x-6 h-full">
+            {/* Right side: desktop nav then mobile toggle */}
+            <div className="flex items-center gap-6 px-3 h-full">
+              <nav aria-label="Primary navigation" className="hidden lg:flex lg:items-center lg:space-x-6">
                 {links.map(link => {
                   if (link.label === 'SERVICES') {
                     // When viewing a specific service, hide/disable the dropdown and render a simple link
@@ -202,21 +222,17 @@ const Header: React.FC = () => {
                                   ))}
                                 </ul>
                               </div>
-
-
                             </div>
                           </div>
-                      </div>
-                    );
-                  }
-
-                  // default link
-                  return (
-                    <Link
-                      key={link.href}
-                      to={link.href}
-                      className="text-gray-600 hover:text-teal-400 text-base font-medium tracking-wide transition-colors duration-200 inline-flex items-center gap-2 whitespace-nowrap"
-                    >
+                        </div>
+                      );
+                    }
+                    return (
+                        <Link
+                          key={link.href}
+                          to={link.href}
+                          className="text-gray-600 hover:text-teal-400 text-base font-medium tracking-wide transition-colors duration-200 inline-flex items-center gap-2 whitespace-nowrap"
+                        >
                       {/* Icon + label */}
                       {link.label === 'HOME' && (
                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden>
@@ -243,23 +259,23 @@ const Header: React.FC = () => {
 
             {/* Right: mobile toggle only */}
             <div className="flex items-center justify-end h-full">
-              {/* Only show toggle on mobile */}
-              <button
-                onClick={() => setOpen(v => !v)}
-                className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                aria-controls="mobile-menu"
-                aria-expanded={open}
-                aria-label={open ? 'Close menu' : 'Open menu'}
-                style={{ display: 'block' }}
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  {open ? (
-                    <path d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path d="M3 12h18M3 6h18M3 18h18" />
-                  )}
-                </svg>
-              </button>
+              {!isLarge && (
+                <button
+                  onClick={() => setOpen(v => !v)}
+                  className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  aria-controls="mobile-menu"
+                  aria-expanded={open}
+                  aria-label={open ? 'Close menu' : 'Open menu'}
+                >
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    {open ? (
+                      <path d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path d="M3 12h18M3 6h18M3 18h18" />
+                    )}
+                  </svg>
+                </button>
+              )}
             </div>
 
             
@@ -270,14 +286,12 @@ const Header: React.FC = () => {
     </div>
 
       {/* Mobile Navigation Panel */}
-      {/* Only mobile menu gets black bg and white text */}
       <div id="mobile-menu" className={`${open ? 'block' : 'hidden'} lg:hidden bg-white border-t border-gray-200`}>
         <div className="px-4 pt-4 pb-6 space-y-2">
           <div className="mx-auto w-[95%]">
             <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
               {links.map(link => {
                 if (link.label === 'SERVICES') {
-                  // On a specific service detail page hide the mobile dropdown and show a simple link
                   if (isServiceDetail) {
                     return (
                       <Link key={link.href} to={link.href} onClick={() => setOpen(false)} className="px-3 py-3 text-gray-700 hover:text-teal-400 hover:bg-gray-100 rounded-md text-base font-medium tracking-wide transition-colors duration-200 flex items-center gap-2 whitespace-nowrap">
@@ -285,6 +299,7 @@ const Header: React.FC = () => {
                       </Link>
                     );
                   }
+
                   return (
                     <div key={link.href} className="flex flex-col">
                       <button

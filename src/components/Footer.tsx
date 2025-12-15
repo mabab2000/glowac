@@ -31,6 +31,11 @@ const Footer: React.FC = () => {
                   Why Choosing Us!
                 </a>
               </li>
+              <li>
+                <a href="/update" className="text-emerald-200 hover:text-white transition-colors duration-300">
+                  Update (admin)
+                </a>
+              </li>
             </ul>
           </div>
 
