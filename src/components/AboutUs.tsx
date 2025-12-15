@@ -329,7 +329,7 @@ const AboutUs: React.FC = () => {
         </div>
 
         {/* What We Do — Prominent section with big cards */}
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center mx-4 sm:mx-0">
           <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">What We Do</h3>
           <div className="w-24 h-1 bg-teal-500 mx-auto mb-8"></div>
 
