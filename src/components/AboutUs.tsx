@@ -260,17 +260,17 @@ const AboutUs: React.FC = () => {
         {/* Main content */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
-          <div className="space-y-6">
-            <h3 className="text-4xl sm:text-5xl mx-auto font-bold text-gray-900 mb-4">
+          <div className="space-y-6 mx-4 sm:mx-0">
+            <h3 className="text-4xl sm:text-5xl mx-auto font-bold text-gray-900 mb-4 sm:mb-4 sm:mx-0 mx-2">
               Our Commitment to Excellence
             </h3>
-            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
+            <p className="text-xl sm:text-2xl mx-auto text-gray-700 leading-relaxed text-justify">
               GLOWAC is committed to building strong relationships with clients by providing exceptional customer service, the highest quality legally defensible data.
             </p>
-            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
+            <p className="text-xl sm:text-2xl mx-auto  text-gray-700 leading-relaxed text-justify">
               Besides training, experience and knowledge of the GLOWAC team members, their values are merged to reflect the following criteria for business success.
             </p>
-            <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
+            <p className="text-xl sm:text-2xl mx-auto text-gray-700 leading-relaxed text-justify">
               Our focus on quality, instrumentation, and adherence to recognised standards ensures reliable results for engineers, contractors, and researchers.
             </p>
           </div>
