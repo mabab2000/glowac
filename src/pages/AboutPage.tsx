@@ -26,7 +26,7 @@ const InteractivePolicy: React.FC = () => {
         <h4 className="text-xl font-semibold mb-2 text-gray-700">Mission</h4>
         <div className="text-gray-500 text-justify">
           <p className="leading-relaxed font-medium">
-            Glowac Laboratory's mission is to deliver accurate, reliable, and timely testing services that support safe and sustainable construction and engineering projects. We prioritize customer needs, continual improvement, and adherence to recognized standards so our results are defensible and trusted.
+          Glowac Laboratory’s mission is to provide accurate, reliable, and timely testing and analytical services that contribute to the success of safe, durable, and sustainable construction and engineering projects. We are committed to supporting our clients with high‑quality data, clear reporting, and technical expertise that enable informed decision‑making and regulatory compliance. By prioritizing customer needs, investing in continual improvement, and strictly adhering to national and internationally recognized standards, we ensure that our test results are technically defensible, consistent, and widely trusted. Through professionalism, integrity, and innovation, Glowac Laboratory aims to be a dependable partner in advancing quality and safety across the built environment.
           </p>
         </div>
       </div>
@@ -154,7 +154,7 @@ const AboutPage: React.FC = () => {
       {/* Full-bleed dashed area */}
       <div className="max-w-[62rem] mx-auto px-0 sm:px-4 lg:px-8">
         <div className="w-full lg:max-w-4xl mx-auto">
-            <div className="bg-emerald-100 rounded-none text-center p-3 mt-0">
+            <div className=" rounded-none text-center p-3 mt-0">
             <h1 className="text-3xl font-bold text-emerald-600 mb-2">{aboutTitle}</h1>
             <div className="w-20 h-1 bg-emerald-600 mx-auto" />
           </div>

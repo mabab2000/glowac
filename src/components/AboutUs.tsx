@@ -15,10 +15,22 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
+  // Validation state
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  const validate = (fields: { name: string; email: string; phone: string; project_details: string; }) => {
+    const errs: { [k: string]: string } = {};
+    if (!fields.name.trim()) errs.name = 'Name is required.';
+    if (!fields.email.trim()) errs.email = 'Email is required.';
+    else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fields.email)) errs.email = 'Invalid email address.';
+    // phone is optional
+    if (!fields.project_details.trim()) errs.project_details = 'Project details are required.';
+    return errs;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (submitting) return;
-    setSubmitting(true);
     const form = new FormData(e.currentTarget as HTMLFormElement);
     const name = String(form.get('name') || '');
     const email = String(form.get('email') || '');
@@ -26,6 +38,13 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
     const project_details = String(form.get('message') || '');
     const service = String(form.get('service') || defaultService || 'Geotechnical & Concrete Services');
 
+    const validation = validate({ name, email, phone, project_details });
+    setErrors(validation);
+    if (Object.keys(validation).length > 0) {
+      return;
+    }
+
+    setSubmitting(true);
     try {
       const body = new URLSearchParams();
       body.append('name', name);
@@ -41,6 +60,7 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
       setToast({ text: 'Request submitted — thank you.', visible: true });
       (e.currentTarget as HTMLFormElement).reset();
       setShowModal(false);
+      setErrors({});
     } catch (err) {
       setToast({ text: 'Request submitted — thank you.', visible: true });
     } finally {
@@ -99,20 +119,23 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input name="name" required className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" />
+                  <input name="name" placeholder='Enter you full name here' required className={`w-full px-3 py-2 border rounded-md focus:ring-teal-500 focus:border-teal-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`} />
+                  {errors.name && <div className="text-red-600 text-xs mt-1">{errors.name}</div>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input name="email" type="email" required className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" />
+                  <input name="email" placeholder='Enter your email address' type="email" required className={`w-full px-3 py-2 border rounded-md focus:ring-teal-500 focus:border-teal-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`} />
+                  {errors.email && <div className="text-red-600 text-xs mt-1">{errors.email}</div>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input name="phone" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" />
+                  <input name="phone" placeholder='Phone number' className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Project Details</label>
-                <textarea name="message" rows={3} placeholder="Please describe your project requirements..." className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"></textarea>
+                <textarea name="message" rows={3} placeholder="Please describe your project requirements..." className={`w-full px-3 py-2 border rounded-md focus:ring-teal-500 focus:border-teal-500 ${errors.project_details ? 'border-red-500' : 'border-gray-300'}`}></textarea>
+                {errors.project_details && <div className="text-red-600 text-xs mt-1">{errors.project_details}</div>}
               </div>
               <div className="flex justify-end space-x-3 pt-4">
                 <button 
@@ -238,7 +261,7 @@ const AboutUs: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
           <div className="space-y-6">
-            <h3 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            <h3 className="text-4xl sm:text-5xl mx-auto font-bold text-gray-900 mb-4">
               Our Commitment to Excellence
             </h3>
             <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed text-justify">
@@ -253,7 +276,7 @@ const AboutUs: React.FC = () => {
           </div>
 
           {/* Right: Working Hours Timeline */}
-          <div className="bg-white/80 backdrop-blur-sm p-8 rounded-xl shadow-lg border border-gray-200">
+          <div className="bg-white/80 backdrop-blur-sm p-8 rounded-0l shadow-lg border border-gray-200">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Working Hours</h3>
             <div className="space-y-4">
               {workingHours.map((schedule, index) => (
@@ -288,7 +311,7 @@ const AboutUs: React.FC = () => {
         </div>
 
         {/* Stats section */}
-        <div className="bg-white rounded-2xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mb-16">
+        <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mb-16">
           <div className="text-center mb-8">
             <h3 className="text-3xl font-bold text-gray-900 mb-2">Facts & Figures</h3>
             <div className="w-20 h-1 bg-teal-500 mx-auto"></div>
@@ -312,7 +335,7 @@ const AboutUs: React.FC = () => {
 
             <div className="max-w-6xl mx-auto grid gap-8 sm:grid-cols-1 md:grid-cols-3 px-0 sm:px-4">
             {/* Card 1: Geotechnical & Concrete Services */}
-            <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
+            <div className="bg-white rounded-0xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
               <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                 <rect x="8" y="32" width="48" height="20" rx="2" fill="currentColor" opacity="0.12" />
                 <path d="M12 32V18a2 2 0 012-2h8v16H12z" fill="currentColor" opacity="0.18" />
@@ -324,7 +347,7 @@ const AboutUs: React.FC = () => {
             </div>
 
             {/* Card 2: Topographical Surveying */}
-            <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
+            <div className="bg-white rounded-0xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
               <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                 <path d="M8 20l12-6 12 6 12-6 12 6v26l-12 6-12-6-12 6L8 46V20z" fill="currentColor" opacity="0.14" />
                 <circle cx="32" cy="30" r="6" fill="currentColor" />
@@ -335,7 +358,7 @@ const AboutUs: React.FC = () => {
             </div>
 
             {/* Card 3: Environmental Impact Assessment */}
-            <div className="bg-white rounded-2xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
+            <div className="bg-white rounded-0xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
               <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                 <path d="M32 8c8 0 14 6 14 14 0 11-14 22-14 22s-14-11-14-22c0-8 6-14 14-14z" fill="currentColor" opacity="0.16" />
                 <path d="M24 34c2-6 8-10 12-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -350,7 +373,7 @@ const AboutUs: React.FC = () => {
 
           {/* Why Choose Us section (moved here after stats) */}
           <div className="mt-8 mb-8 text-center">
-            <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">Why Choose Us</h3>
+            <h3 className="text-4xl sm:text-5xl mx-auto lg:text-6xl font-bold text-gray-900 mb-4">Why Choose Us</h3>
             <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
             <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
               We combine deep technical expertise with a commitment to client success — delivering reliable, timely, and cost-effective geotechnical solutions tailored to your project's needs.
@@ -358,7 +381,7 @@ const AboutUs: React.FC = () => {
           </div>
 
           {/* Additional Stats section (placed under Why Choose Us) */}
-          <div className="bg-white rounded-2xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mt-8 mb-8">
+          <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mt-8 mb-8">
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
               <div className="group flex-1">
                 <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">100%</div>
