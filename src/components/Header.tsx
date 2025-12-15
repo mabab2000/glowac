@@ -108,15 +108,15 @@ const Header: React.FC = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-0 sm:px-0 lg:px-0 py-0">
+      <div className="max-w-10xl mx-0 px-0 sm:px-0 lg:px-0 py-0">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
           {/* bg-black and text-white only on mobile (lg:hidden), keep original on desktop */}
           <div className="border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md py-0 bg-white lg:bg-gray-200 lg:text-black m-0">
           <div className="px-0 py-0 m-0">
-          <div className="flex items-center justify-between gap-4 h-20 md:h-24 lg:h-16">
-            <div className="flex items-left px-3 h-full">
+          <div className="flex items-center justify-between gap-0 h-20 md:h-24 lg:h-16">
+            <div className="flex left-0 px-0 h-full">
               {/* Logo (left) */}
-              <Link to="/" className="flex items-center h-full overflow-hidden">
+              <Link to="/" className="flex items-left h-full overflow-hidden">
                 <img src="/logo2.png" alt="GLOWAC " className="h-full w-40 object-contain block" />
               </Link>
             </div>

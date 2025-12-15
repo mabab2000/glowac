@@ -64,7 +64,7 @@ const ContactPage: React.FC = () => {
             <div className="lg:col-span-2 rounded-xl overflow-hidden shadow border border-gray-200 h-64 sm:h-80 md:h-96 lg:h-[420px]">
               <iframe
                 title="GLOWAC location map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15950.123456789!2d30.1044!3d-1.9706!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMcKwNTgnMTQuMiJTIDMwwrAwNicxNS44IkU!5e1!3m2!1sen!2srw!4v1234567890"
+                src="https://www.google.com/maps/embed?pb=!4v1765794896319!6m8!1m7!1sDMWZGrkdhbIoYBUkLV_-Xg!2m2!1d-1.937674890573068!2d30.06543459002438!3f170.33934770654375!4f2.9781621489960344!5f0.4000000000000002"
                 className="w-full h-full border-0"
                 loading="lazy"
                 allowFullScreen
