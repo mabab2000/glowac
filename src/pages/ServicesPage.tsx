@@ -29,7 +29,14 @@ const TestSelectionTable: React.FC<{ tests: TestRow[] }> = ({ tests }) => {
               }
               onClick={() => setSelectedId(t.id)}
             >
-              <td className="px-4 py-2 font-medium text-emerald-900">{t.test_name}</td>
+              <td className="px-4 py-2 font-medium text-emerald-900">
+                <span className="inline-flex items-center">
+                  <svg className="w-3 h-3 text-emerald-600 mr-2 flex-shrink-0" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.2" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                    <rect x="1" y="1" width="6" height="6" rx="1" />
+                  </svg>
+                  <span>{t.test_name}</span>
+                </span>
+              </td>
               <td className="px-4 py-2 text-gray-700 text-sm">{(t.description && String(t.description).trim().toLowerCase() !== 'string') ? t.description : ''}</td>
             </tr>
           ))}
