@@ -261,7 +261,7 @@ const AboutUs: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
           <div className="space-y-6 mx-4 sm:mx-0">
-            <h3 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 mx-2 sm:mx-0">
+            <h3 id="our-commitment" className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 mx-2 sm:mx-0">
               Our Commitment to Excellence
             </h3>
             <p className="text-xl sm:text-2xl mx-auto text-gray-700 leading-relaxed text-justify">
@@ -277,7 +277,7 @@ const AboutUs: React.FC = () => {
 
           {/* Right: Working Hours Timeline */}
           <div className="bg-white/80 backdrop-blur-sm p-8 rounded-0l shadow-lg border border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Working Hours</h3>
+            <h3 id="working-hours" className="text-2xl font-bold text-gray-900 mb-6 text-center">Working Hours</h3>
             <div className="space-y-4">
               {workingHours.map((schedule, index) => (
                 <div 
@@ -313,7 +313,7 @@ const AboutUs: React.FC = () => {
         {/* Stats section (carousel like team members) */}
         <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mb-16">
           <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">Facts & Figures</h3>
+            <h3 id="facts" className="text-3xl font-bold text-gray-900 mb-2">Facts & Figures</h3>
             <div className="w-20 h-1 bg-teal-500 mx-auto"></div>
           </div>
 
@@ -323,7 +323,7 @@ const AboutUs: React.FC = () => {
 
         {/* What We Do — Prominent section with big cards */}
         <div className="mt-12 text-center mx-4 sm:mx-0">
-          <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">What We Do</h3>
+          <h3 id="what-we-do" className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">What We Do</h3>
           <div className="w-24 h-1 bg-teal-500 mx-auto mb-8"></div>
 
             <div className="max-w-6xl mx-auto grid gap-8 sm:grid-cols-1 md:grid-cols-3 px-0 sm:px-4">
@@ -366,7 +366,7 @@ const AboutUs: React.FC = () => {
 
           {/* Why Choose Us section (moved here after stats) */}
           <div className="mt-8 mb-8 text-center">
-            <h3 className="text-4xl sm:text-5xl mx-auto lg:text-6xl font-bold text-gray-900 mb-4">Why Choose Us</h3>
+            <h3 id="why-choose-us" className="text-4xl sm:text-5xl mx-auto lg:text-6xl font-bold text-gray-900 mb-4">Why Choose Us</h3>
             <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
             <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
               We combine deep technical expertise with a commitment to client success — delivering reliable, timely, and cost-effective geotechnical solutions tailored to your project's needs.

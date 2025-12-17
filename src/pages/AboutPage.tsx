@@ -163,7 +163,7 @@ const AboutPage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 mt-0">
         {/* Background section */}
-        <section className="mt-0">
+        <section id="background" className="mt-0" >
           <div className="w-full lg:max-w-[calc(62rem)] mx-auto">
             <div className="p-8 rounded-none shadow-sm text-justify">
             <h2 className="text-2xl font-semibold text-bold-700 mb-3">Background</h2>

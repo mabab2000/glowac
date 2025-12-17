@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -12,30 +13,26 @@ const Footer: React.FC = () => {
             <h3 className="text-2xl font-bold text-white mb-6">About Us</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-emerald-200 hover:text-white transition-colors duration-300">
+                <Link to="/about" className="text-emerald-200 hover:text-white transition-colors duration-300">
                   Historical Background
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-emerald-200 hover:text-white transition-colors duration-300">
+                <Link to="/about" className="text-emerald-200 hover:text-white transition-colors duration-300">
                   Mission Vision Values
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-emerald-200 hover:text-white transition-colors duration-300">
+                <Link to="/about" className="text-emerald-200 hover:text-white transition-colors duration-300">
                   Our Laboratory
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-emerald-200 hover:text-white transition-colors duration-300">
+                <Link to="/" className="text-emerald-200 hover:text-white transition-colors duration-300">
                   Why Choosing Us!
-                </a>
+                </Link>
               </li>
-              <li>
-                <a href="/update" className="text-emerald-200 hover:text-white transition-colors duration-300">
-                  Update (admin)
-                </a>
-              </li>
+
             </ul>
           </div>
 
