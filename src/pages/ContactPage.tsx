@@ -84,8 +84,8 @@ const ContactPage: React.FC = () => {
               <div className="bg-white rounded-xl p-6 shadow border border-gray-200">
                 <h3 className="text-xl font-semibold mb-3">Working Hours</h3>
                 <ul className="text-gray-700 space-y-1">
-                  <li>Mon–Fri: 9:00 AM – 6:00 PM</li>
-                  <li>Saturday: 10:00 AM – 4:00 PM</li>
+                  <li>Mon–Fri: 7:00 AM – 5:00 PM</li>
+                  <li>Saturday: 7:00 AM – 12:00 PM</li>
                   <li>Sunday: Closed</li>
                 </ul>
               </div>

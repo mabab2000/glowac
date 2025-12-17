@@ -261,7 +261,7 @@ const AboutUs: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
           <div className="space-y-6 mx-4 sm:mx-0">
-            <h3 className="text-4xl sm:text-5xl mx-auto font-bold text-gray-900 mb-4 sm:mb-4 sm:mx-0 mx-2">
+            <h3 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 mx-2 sm:mx-0">
               Our Commitment to Excellence
             </h3>
             <p className="text-xl sm:text-2xl mx-auto text-gray-700 leading-relaxed text-justify">
@@ -310,22 +310,15 @@ const AboutUs: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats section */}
+        {/* Stats section (carousel like team members) */}
         <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mb-16">
           <div className="text-center mb-8">
             <h3 className="text-3xl font-bold text-gray-900 mb-2">Facts & Figures</h3>
             <div className="w-20 h-1 bg-teal-500 mx-auto"></div>
           </div>
-          <div className="grid md:grid-cols-4 gap-8">
-            {facts.map(f => (
-              <div key={f.id} className="group bg-white border-2 border-teal-300 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-center">
-                <div className="text-5xl lg:text-6xl font-bold text-teal-600 mb-4 group-hover:scale-110 transition-transform duration-300">
-                  {f.value}
-                </div>
-                <p className="text-lg font-semibold text-gray-700">{f.label}</p>
-              </div>
-            ))}
-          </div>
+
+          {/* Carousel */}
+          <FactsCarousel facts={facts} />
         </div>
 
         {/* What We Do — Prominent section with big cards */}
@@ -415,3 +408,56 @@ const AboutUs: React.FC = () => {
 };
 
 export default AboutUs;
+
+// FactsCarousel component placed after default export to keep file grouping
+const FactsCarousel: React.FC<{ facts: { id: string; label: string; value: string }[] }> = ({ facts }) => {
+  const items = [...facts, ...facts];
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const lastTimeRef = useRef<number | null>(null);
+  const pausedRef = useRef(false);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    if (facts.length === 0) return;
+
+    const speed = 30; // px/sec
+
+    const step = (time: number) => {
+      if (lastTimeRef.current == null) lastTimeRef.current = time;
+      const delta = (time - lastTimeRef.current) / 1000;
+      lastTimeRef.current = time;
+      if (!pausedRef.current) {
+        el.scrollLeft += speed * delta;
+        if (el.scrollLeft >= el.scrollWidth / 2) {
+          el.scrollLeft -= el.scrollWidth / 2;
+        }
+      }
+      frameRef.current = requestAnimationFrame(step);
+    };
+
+    frameRef.current = requestAnimationFrame(step);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+  }, [facts.length]);
+
+  if (facts.length === 0) return <div className="text-sm text-gray-500">No facts available.</div>;
+
+  return (
+    <div className="overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0"
+      onMouseEnter={() => (pausedRef.current = true)}
+      onMouseLeave={() => (pausedRef.current = false)}>
+      <div
+        ref={scrollerRef}
+        className="flex gap-6 snap-x snap-mandatory overflow-x-auto scroll-smooth no-scrollbar"
+        aria-hidden="true">
+        {items.map((f, idx) => (
+          <div key={`${f.id}-${idx}`} className="flex-none min-w-[60%] sm:min-w-[45%] md:min-w-[25%] bg-white border border-teal-200 rounded-none text-center p-6">
+            <div className="text-4xl sm:text-5xl font-bold text-teal-600 mb-3">{f.value}</div>
+            <p className="text-lg font-semibold text-gray-700">{f.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
