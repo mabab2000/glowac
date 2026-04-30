@@ -7,6 +7,7 @@ import ScrollProgressCircle from './components/ScrollProgressCircle';
 import AboutPage from './pages/AboutPage';
 import AboutPreview from './components/AboutPreview';
 import AboutUs from './components/AboutUs';
+import TrustSection from './components/TrustSection';
 import MessageUpdate from './pages/update/MessageUpdate';
 import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
@@ -46,6 +47,7 @@ function Home() {
           </h1>
         </div>
       </div>
+      <TrustSection />
       <AboutUs />
     </>
   );

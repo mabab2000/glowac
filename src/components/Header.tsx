@@ -111,7 +111,7 @@ const Header: React.FC = () => {
       <div className="max-w-10xl mx-0 px-0 sm:px-0 lg:px-0 py-0">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
           {/* bg-black and text-white only on mobile (lg:hidden), keep original on desktop */}
-          <div className="border-2 border-teal-300 rounded-none shadow-xl backdrop-blur-md py-0 bg-white lg:bg-gray-200 lg:text-black m-0">
+          <div className="border-2  rounded-none shadow-xl backdrop-blur-md py-0 bg-white lg:bg-gray-200 lg:text-black m-0">
           <div className="px-0 py-0 m-0">
           <div className="flex items-center justify-between gap-0 h-20 md:h-24 lg:h-16">
             <div className="flex left-0 px-0 h-full">
