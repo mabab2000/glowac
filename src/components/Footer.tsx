@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
     <footer className="bg-gradient-to-br from-emerald-700 via-emerald-800 to-slate-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
           
           {/* About Us Section */}
           <div>
@@ -61,6 +61,20 @@ const Footer: React.FC = () => {
 
         {/* Bottom Section (horizontal line only) */}
         <div className="border-t border-emerald-600 pt-8" />
+        
+        {/* Copyright Section */}
+        <div className="text-center text-emerald-200 text-sm space-y-2">
+          <p>Copyright © 2026 - GLOWAC LTD - All Rights Reserved</p>
+          <div className="flex justify-center space-x-4">
+            <Link to="/terms" className="hover:text-white transition-colors duration-300">
+              Terms & Conditions
+            </Link>
+            <span>|</span>
+            <Link to="/privacy" className="hover:text-white transition-colors duration-300">
+              Privacy Policy
+            </Link>
+          </div>
+        </div>
 
       {/* WhatsApp Float Button */}
       <div className="fixed bottom-6 right-6 z-50">
@@ -84,36 +98,128 @@ const Footer: React.FC = () => {
 
 export default Footer;
 
-// Services list component (hardcoded)
+// Services list component (from API)
 const ServiceList: React.FC = () => {
-  interface ServiceItem { id: string; name: string; to: string; external?: boolean }
+  type MainService = { id: number; service_name: string };
+  type SubService = { id: number; main_service_id: number; service_name: string; description?: string };
 
-  const services: ServiceItem[] = [
-    { id: 'geotechnical', name: 'Geotechnical service', to: '/services/geotechnical' },
-    { id: 'other', name: 'Other services', to: '/services' },
-    { id: 'main', name: 'Mail', to: 'https://glowac.rw/webmail', external: true },
-  ];
+  const [mainServices, setMainServices] = useState<MainService[]>([]);
+  const [expandedService, setExpandedService] = useState<number | null>(null);
+  const [subServices, setSubServices] = useState<Record<number, SubService[]>>({});
+  const [loading, setLoading] = useState(false);
+
+  // Load main services on mount
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('https://glowac-api.onrender.com/main-services', { 
+          headers: { accept: 'application/json' } 
+        });
+        if (!mounted) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data)) return;
+        setMainServices(data.map((r: any) => ({ 
+          id: Number(r.id), 
+          service_name: String(r.service_name ?? '') 
+        })));
+      } catch (err) {
+        console.debug('Footer: failed to load main services', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  // Load sub-services for a main service
+  const loadSubServices = async (mainId: number) => {
+    if (subServices[mainId]) {
+      // Already loaded, just toggle
+      setExpandedService(expandedService === mainId ? null : mainId);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`https://glowac-api.onrender.com/sub-services/by-main/${mainId}`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+      
+      const mapped = data.map((r: any) => ({
+        id: Number(r.id),
+        main_service_id: Number(r.main_service_id ?? mainId),
+        service_name: String(r.service_name ?? ''),
+        description: typeof r.description === 'string' ? r.description : undefined
+      }));
+      
+      setSubServices(prev => ({ ...prev, [mainId]: mapped }));
+      setExpandedService(mainId);
+    } catch (err) {
+      console.debug('Failed to load sub-services', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getServiceSlug = (serviceName: string) => 
+    serviceName.toLowerCase().replace(/\s+/g, '-');
 
   return (
     <ul className="space-y-3">
-      {services.map((s) => (
-        <li key={s.id}>
-          {s.external ? (
-            <a
-              href={s.to}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-emerald-200 hover:text-white transition-colors duration-300"
+      {mainServices.map((service) => (
+        <li key={service.id}>
+          <div>
+            <button
+              onClick={() => loadSubServices(service.id)}
+              className="text-emerald-200 hover:text-white transition-colors duration-300 flex items-center gap-2 w-full text-left"
             >
-              {s.name}
-            </a>
-          ) : (
-            <Link to={s.to} className="text-emerald-200 hover:text-white transition-colors duration-300">
-              {s.name}
-            </Link>
-          )}
+              <span>{service.service_name}</span>
+              <svg 
+                className={`w-3 h-3 transition-transform duration-200 ${expandedService === service.id ? 'rotate-180' : ''}`}
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.352a.75.75 0 011.14.98l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
+            </button>
+            
+            {expandedService === service.id && (
+              <ul className="ml-4 mt-2 space-y-2">
+                {loading ? (
+                  <li className="text-emerald-300 text-sm">Loading...</li>
+                ) : (
+                  subServices[service.id]?.map((subService) => (
+                    <li key={subService.id}>
+                      <Link
+                        to={`/services/${getServiceSlug(service.service_name)}/${getServiceSlug(subService.service_name)}`}
+                        className="text-emerald-300 hover:text-white transition-colors duration-300 text-sm"
+                      >
+                        {subService.service_name}
+                      </Link>
+                    </li>
+                  )) || <li className="text-emerald-300 text-sm">No sub-services found</li>
+                )}
+              </ul>
+            )}
+          </div>
         </li>
       ))}
+      
+      {/* Static links */}
+      
+      <li>
+        <a
+          href="https://glowac.rw/webmail"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-emerald-200 hover:text-white transition-colors duration-300"
+        >
+          Webmail
+        </a>
+      </li>
     </ul>
   );
 };

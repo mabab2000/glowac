@@ -70,7 +70,7 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
 
   return (
     <>
-      <section className="mt-8 mb-16">
+      <section className="mt-0 mb-6">
         <div className="text-center mb-6">
           <h3 className="text-3xl font-bold text-gray-900">Request a Service</h3>
           <p className="text-gray-600">Contact us for our geotechnical and concrete services.</p>
@@ -180,12 +180,8 @@ type Hour = { id: string; day: string; hours: string; status: 'open' | 'closed' 
 
 const AboutUs: React.FC = () => {
   const [workingHours, setWorkingHours] = useState<Hour[]>([
-    { id: 'monday', day: 'Monday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { id: 'tuesday', day: 'Tuesday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { id: 'wednesday', day: 'Wednesday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { id: 'thursday', day: 'Thursday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { id: 'friday', day: 'Friday', hours: '9:00 AM - 6:00 PM', status: 'open' },
-    { id: 'saturday', day: 'Saturday', hours: '10:00 AM - 4:00 PM', status: 'open' },
+    { id: 'weekdays', day: 'Monday - Friday', hours: '9:00 AM - 6:00 PM', status: 'open' },
+    { id: 'saturday', day: 'Saturday', hours: '09:00 AM - 5:00 PM', status: 'open' },
     { id: 'sunday', day: 'Sunday', hours: 'Closed', status: 'closed' },
   ]);
 
@@ -224,34 +220,11 @@ const AboutUs: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch('https://glowac-api.onrender.com/tus', { headers: { Accept: 'application/json' } });
-        if (!mounted) return;
-        if (!res.ok) throw new Error('Failed to fetch');
-        const data = await res.json();
-        if (!Array.isArray(data)) return;
-        const mapped: Hour[] = data.map((r: any) => ({
-          id: String(r.id ?? Math.random()),
-          day: typeof r.day === 'string' ? r.day : '',
-          hours: typeof r.hours === 'string' ? r.hours : '',
-          status: (typeof r.status === 'string' && r.status.toLowerCase() === 'closed') ? 'closed' : 'open',
-        }));
-        if (mounted && mapped.length) setWorkingHours(mapped);
-      } catch (err) {
-        console.debug('AboutUs: failed to load working hours from API', err);
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
-
   return (
-    <section id="about" className="pt-0 pb-20 relative mt-12 md:mt-16">
+    <section id="about" className="pt-0 pb-8 relative md:mt-0">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-teal-100 rounded-full opacity-30"></div>
+        <div className="absolute -top-10 -right-40 w-80 h-80 bg-teal-100 rounded-full opacity-30"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-100 rounded-full opacity-30"></div>
       </div>
       
@@ -260,113 +233,109 @@ const AboutUs: React.FC = () => {
         {/* Main content */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
-          <div className="space-y-6 mx-4 sm:mx-0">
-            <h3 id="our-commitment" className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 mx-2 sm:mx-0">
+          <div className="space-y-0 mx-4 sm:mx-0">
+            <h4 id="our-commitment" className="text-4xl sm:text-5xl font-bold text-gray-900 mb-0 mx-2 sm:mx-0">
               Our Commitment to Excellence
-            </h3>
-            <p className="text-xl sm:text-2xl mx-auto text-gray-700 leading-relaxed text-justify">
+            </h4>
+            <p className="text-xl sm:text-1xl mx-auto text-gray-700 leading-relaxed text-justify">
               GLOWAC is committed to building strong relationships with clients by providing exceptional customer service, the highest quality legally defensible data.
             </p>
-            <p className="text-xl sm:text-2xl mx-auto  text-gray-700 leading-relaxed text-justify">
+            <p className="text-xl sm:text-1xl mx-auto  text-gray-700 leading-relaxed text-justify">
               Besides training, experience and knowledge of the GLOWAC team members, their values are merged to reflect the following criteria for business success.
             </p>
-            <p className="text-xl sm:text-2xl mx-auto text-gray-700 leading-relaxed text-justify">
+            <p className="text-xl sm:text-1xl mx-auto text-gray-700 leading-relaxed text-justify">
               Our focus on quality, instrumentation, and adherence to recognised standards ensures reliable results for engineers, contractors, and researchers.
             </p>
           </div>
 
-          {/* Right: Working Hours Timeline */}
-          <div className="bg-white/80 backdrop-blur-sm p-8 rounded-0l shadow-lg border border-gray-200">
-            <h3 id="working-hours" className="text-2xl font-bold text-gray-900 mb-6 text-center">Working Hours</h3>
-            <div className="space-y-4">
-              {workingHours.map((schedule, index) => (
-                <div 
-                  key={schedule.id}
-                  className={`flex justify-between items-center p-4 rounded-lg transition-all duration-300 hover:transform hover:scale-105 ${
-                    schedule.status === 'open' 
-                      ? 'bg-teal-50 border-l-4 border-teal-500 hover:bg-teal-100' 
-                      : 'bg-gray-50 border-l-4 border-gray-400 hover:bg-gray-100'
-                  }`}
-                  style={{
-                    animationDelay: `${index * 100}ms`
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      schedule.status === 'open' ? 'bg-teal-500 animate-pulse' : 'bg-gray-400'
-                    }`}></div>
-                    <span className="font-semibold text-gray-900">{schedule.day}</span>
+          {/* Right: Working Hours and Certifications as separate cards */}
+          <div className="space-y-6">
+            {/* Certifications Card */}
+            <div className="bg-white/80 p-6 rounded-lg shadow-lg border border-gray-200">
+              <h4 className="text-xl font-bold text-gray-900 mb-4 text-center">Our Certifications</h4>
+              <div className="grid grid-cols-2 gap-4">
+                {/* Engineer Certificate */}
+                <div className="border-2 border-blue-300 rounded-lg p-3 text-center hover:border-blue-500 transition-colors duration-300 bg-transparent">
+                  <div className="flex items-center justify-center mb-2">
+                    <img 
+                      src="/images/engineer-logo.png" 
+                      alt="Engineer Certification" 
+                      className="w-30 h-14 object-contain"
+                    />
                   </div>
-                  <span className={`font-medium ${
-                    schedule.status === 'open' ? 'text-teal-600' : 'text-gray-500'
-                  }`}>
-                    {schedule.hours}
-                  </span>
+                  <div className="text-blue-600 font-semibold text-xs">Member</div>
                 </div>
-              ))}
+                
+                {/* RSB Certificate */}
+                <div className="border-2 border-gray-300 rounded-lg p-3 text-center hover:border-gray-500 transition-colors duration-300 bg-transparent">
+                  <div className="flex items-center justify-center mb-2">
+                    <img 
+                      src="/images/rsb-icon.png" 
+                      alt="Rwanda Standards Board" 
+                      className="w-30 h-14 object-contain"
+                    />
+                  </div>
+                  <div className="text-gray-700 font-semibold text-xs">ISO/IEC 17025:2027</div>
+                </div>
+              </div>
             </div>
-            
-           
+
+            {/* Working Hours Card */}
+            <div className="bg-white/80 p-6 rounded-lg shadow-lg border border-gray-200">
+              <h4 className="text-xl font-bold text-gray-900 mb-4 text-center">Working Hours</h4>
+              <div className="space-y-3">
+                {workingHours.map((schedule, index) => (
+                  <div 
+                    key={schedule.id}
+                    className={`flex justify-between items-center p-3 rounded-lg transition-all duration-300 hover:transform hover:scale-105 ${
+                      schedule.status === 'open' 
+                        ? 'bg-teal-50 border-l-4 border-teal-500 hover:bg-teal-100' 
+                        : 'bg-gray-50 border-l-4 border-gray-400 hover:bg-gray-100'
+                    }`}
+                    style={{
+                      animationDelay: `${index * 100}ms`
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        schedule.status === 'open' ? 'bg-teal-500 animate-pulse' : 'bg-gray-400'
+                      }`}></div>
+                      <span className="font-semibold text-gray-900">{schedule.day}</span>
+                    </div>
+                    <span className={`font-medium ${
+                      schedule.status === 'open' ? 'text-teal-600' : 'text-gray-500'
+                    }`}>
+                      {schedule.hours}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Stats section (carousel like team members) */}
-        <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mb-16">
+        {/* <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mb-16">
           <div className="text-center mb-8">
             <h3 id="facts" className="text-3xl font-bold text-gray-900 mb-2">Facts & Figures</h3>
             <div className="w-20 h-1 bg-teal-500 mx-auto"></div>
           </div>
 
-          {/* Carousel */}
+    
           <FactsCarousel facts={facts} />
-        </div>
+        </div> */}
 
-        {/* What We Do — Prominent section with big cards */}
-        <div className="mt-12 text-center mx-4 sm:mx-0">
-          <h3 id="what-we-do" className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">What We Do</h3>
-          <div className="w-24 h-1 bg-teal-500 mx-auto mb-8"></div>
+        <div className="mt-0 text-center mx-4 sm:mx-0">
+          
+          
 
-            <div className="max-w-6xl mx-auto grid gap-8 sm:grid-cols-1 md:grid-cols-3 px-0 sm:px-4">
-            {/* Card 1: Geotechnical & Concrete Services */}
-            <div className="bg-white rounded-0xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
-              <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                <rect x="8" y="32" width="48" height="20" rx="2" fill="currentColor" opacity="0.12" />
-                <path d="M12 32V18a2 2 0 012-2h8v16H12z" fill="currentColor" opacity="0.18" />
-                <path d="M34 12h6v8h-6zM20 12h6v8h-6z" fill="currentColor" />
-                <path d="M8 54h48" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.9" />
-              </svg>
-              <h4 className="text-2xl font-semibold text-gray-900 mb-2 text-center">Geotechnical & Concrete Services</h4>
-              <p className="text-gray-700 text-justify">In-situ investigations, foundation design support, and concrete testing to ensure durable, safe structures.</p>
-            </div>
-
-            {/* Card 2: Topographical Surveying */}
-            <div className="bg-white rounded-0xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
-              <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                <path d="M8 20l12-6 12 6 12-6 12 6v26l-12 6-12-6-12 6L8 46V20z" fill="currentColor" opacity="0.14" />
-                <circle cx="32" cy="30" r="6" fill="currentColor" />
-                <path d="M32 18v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <h4 className="text-2xl font-semibold text-gray-900 mb-2 text-center">Topographical Surveying</h4>
-              <p className="text-gray-700 text-justify">High-precision land surveys, contour mapping and site layout services to guide design and construction.</p>
-            </div>
-
-            {/* Card 3: Environmental Impact Assessment */}
-            <div className="bg-white rounded-0xl p-8 shadow-xl border border-teal-100 flex flex-col items-center">
-              <svg className="w-24 h-24 text-teal-600 mb-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                <path d="M32 8c8 0 14 6 14 14 0 11-14 22-14 22s-14-11-14-22c0-8 6-14 14-14z" fill="currentColor" opacity="0.16" />
-                <path d="M24 34c2-6 8-10 12-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M40 42c0 4-6 6-8 6s-8-2-8-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <h4 className="text-2xl font-semibold text-gray-900 mb-2 text-center">Environmental Impact Assessment</h4>
-              <p className="text-gray-700 text-justify">Comprehensive EIA studies and mitigation planning to minimise project environmental footprint.</p>
-            </div>
-          </div>
+            
 
           {/* (Stats block moved later) */}
 
           {/* Why Choose Us section (moved here after stats) */}
-          <div className="mt-8 mb-8 text-center">
-            <h3 id="why-choose-us" className="text-4xl sm:text-5xl mx-auto lg:text-6xl font-bold text-gray-900 mb-4">Why Choose Us</h3>
+          <div className="mt-0 mb-0 text-center">
+            <h4 id="why-choose-us" className="text-4xl sm:text-1xl mx-auto lg:text-1xl font-bold text-gray-900 mb-0">Why Choose Us</h4>
             <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
             <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
               We combine deep technical expertise with a commitment to client success — delivering reliable, timely, and cost-effective geotechnical solutions tailored to your project's needs.
@@ -377,7 +346,7 @@ const AboutUs: React.FC = () => {
           <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mt-8 mb-8">
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
               <div className="group flex-1">
-                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">100%</div>
+                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">98%</div>
                 <p className="text-gray-700 font-medium">Client Satisfaction</p>
               </div>
 
@@ -391,8 +360,8 @@ const AboutUs: React.FC = () => {
               <div className="hidden md:flex items-center px-6"><div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div></div>
 
               <div className="group flex-1">
-                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">∞</div>
-                <p className="text-gray-700 font-medium">Commitment to Quality</p>
+                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">15+</div>
+                <p className="text-gray-700 font-medium">Years of Experience</p>
               </div>
             </div>
           </div>

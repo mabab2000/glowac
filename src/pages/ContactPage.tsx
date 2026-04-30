@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
+// Scroll to top when page loads
+const useScrollToTop = () => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+};
+
 const ContactPage: React.FC = () => {
+  useScrollToTop(); // Scroll to top when page loads
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -47,12 +55,12 @@ const ContactPage: React.FC = () => {
   };
 
   return (
-    <main className="pt-28 pb-20">
+    <main className="pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
 
           {/* Title banner (matches About/Services style) */}
-          <div className="bg-emerald-100 rounded-none text-center p-8 mb-8 dashed-bg">
+          <div className="bg-emerald-100 rounded-none text-center p-6 mb-4 dashed-bg">
             <h1 className="text-3xl font-bold text-emerald-600 mb-2">Contact Us</h1>
             <div className="w-20 h-1 bg-emerald-600 mx-auto" />
             <p className="max-w-2xl mx-auto text-gray-700 mt-4">Reach out to GLOWAC using the details below or send us a message using the form — we're here to help.</p>

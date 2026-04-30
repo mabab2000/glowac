@@ -2,6 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { RequestServiceCards } from '../components/AboutUs';
 
+// Scroll to top when page loads
+const useScrollToTop = () => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+};
+
 // Table for selecting a test row
 type TestRow = {
   id: number;
@@ -50,6 +57,7 @@ const TestSelectionTable: React.FC<{ tests: TestRow[] }> = ({ tests }) => {
 };
 
 const ServicesPage: React.FC = () => {
+  useScrollToTop(); // Scroll to top when page loads
   const location = useLocation();
   // state for dynamic services/tests
   type MainService = { id: number; service_name: string };
@@ -168,7 +176,7 @@ const ServicesPage: React.FC = () => {
     return () => { mounted = false; };
   }, [location.pathname, mainSlug, subSlug, mainServices]);
   return (
-    <main className="pt-28 pb-20">
+    <main className="pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="w-full lg:max-w-4xl mx-auto">
           {serviceTitle ? (
@@ -204,7 +212,7 @@ const ServicesPage: React.FC = () => {
             </div>
           ) : (
             /* No sub-service selected */
-            <section className="mt-12">
+            <section className="mt-6">
               <div className="w-full lg:max-w-[calc(56rem)] mx-auto">
                 <div className="bg-emerald-100 rounded-none text-center p-12">
                   <h1 className="text-3xl font-bold text-emerald-600 mb-4">Services</h1>
@@ -228,7 +236,7 @@ const ServicesPage: React.FC = () => {
         </div>
 
         {/* Request Service form — moved here from About page */}
-        <div className="w-full lg:max-w-4xl mx-auto mt-8 px-4">
+        <div className="w-full lg:max-w-4xl mx-auto mt-4 px-4">
           <RequestServiceCards defaultService={serviceTitle ?? undefined} />
         </div>
       </div>

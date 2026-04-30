@@ -35,7 +35,7 @@ const Banner: React.FC = () => {
   // Create a loading UI while video loads
   if (videoLoaded === undefined) {
     return (
-      <section className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-20 lg:py-28 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-20">
+      <section className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-8 lg:py-12 overflow-hidden border-t border-gray-200 min-h-[70vh] mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center">
           <div className="flex flex-col items-center gap-6">
             <div className="flex flex-col items-center">
@@ -67,7 +67,7 @@ const Banner: React.FC = () => {
   if (videoLoaded === false) return null;
 
   return (
-    <section className="relative bg-transparent py-20 lg:py-28 overflow-hidden min-h-[110vh] mt-16">
+    <section className="relative bg-transparent py-8 lg:py-12 overflow-hidden min-h-[110vh] mt-8">
       <div className="absolute inset-0">
         <video
           ref={videoRef}
