@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-type IconName = 'dashboard' | 'about' | 'services' | 'messages' | 'external';
+type IconName = 'home' | 'about' | 'services' | 'messages' | 'external';
 
 const Icon: React.FC<{ name: IconName }> = ({ name }) => {
   const paths: Record<IconName, React.ReactNode> = {
-    dashboard: (
+    home: (
       <>
-        <rect x="3" y="3" width="7" height="7" rx="1" />
-        <rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" />
-        <rect x="14" y="14" width="7" height="7" rx="1" />
+        <path d="m3 11 9-8 9 8" />
+        <path d="M5 10v11h14V10" />
+        <path d="M9 21v-7h6v7" />
       </>
     ),
     about: (
@@ -58,7 +57,7 @@ const Icon: React.FC<{ name: IconName }> = ({ name }) => {
 };
 
 const navigation: Array<{ label: string; description: string; to: string; icon: IconName }> = [
-  { label: 'Dashboard', description: 'Home content', to: '/update', icon: 'dashboard' },
+  { label: 'Homepage', description: 'Banners, hours and facts', to: '/update', icon: 'home' },
   { label: 'About', description: 'Company information', to: '/update/aboutupdate', icon: 'about' },
   { label: 'Services', description: 'Service catalogue', to: '/update/serviceupdate', icon: 'services' },
   { label: 'Messages', description: 'Inbox and requests', to: '/update/messageupdate', icon: 'messages' },
@@ -93,11 +92,11 @@ const UpdateHeader: React.FC = () => {
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b border-emerald-200 bg-emerald-50 px-4 shadow-sm lg:hidden">
-        <Link to="/update" className="flex items-center gap-3" aria-label="GLOWAC dashboard">
+        <Link to="/update" className="flex items-center gap-3" aria-label="GLOWAC homepage editor">
           <img src="/logo.png" alt="" className="h-9 w-9 rounded-lg object-contain" />
           <div>
             <p className="text-sm font-bold tracking-wide text-emerald-950">GLOWAC</p>
-            <p className="text-xs text-emerald-700">Admin dashboard</p>
+            <p className="text-xs text-emerald-700">Homepage manager</p>
           </div>
         </Link>
         <button
@@ -126,7 +125,7 @@ const UpdateHeader: React.FC = () => {
         className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-emerald-800 bg-gradient-to-b from-emerald-900 via-green-900 to-emerald-950 text-white shadow-2xl transition-transform duration-300 lg:translate-x-0 lg:shadow-none ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        aria-label="Update dashboard navigation"
+        aria-label="Content management navigation"
       >
         <div className="flex h-20 items-center justify-between border-b border-emerald-800/80 bg-emerald-950/20 px-5">
           <Link to="/update" className="flex min-w-0 items-center gap-3">

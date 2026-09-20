@@ -798,21 +798,57 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
   // Removed accidental extra loader that fetched `/api/banner-images` which could
   // overwrite the real API-loaded slides during the session.
 
-  const [tab, setTab] = useState<'banners' | 'hours' | 'facts'>('banners');
-
   return (
-    <div className="space-y-6">
-      <div className="flex gap-2">
-        <button className={`px-3 py-1 rounded ${tab === 'banners' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`} onClick={() => setTab('banners')}>Banners</button>
-        <button className={`px-3 py-1 rounded ${tab === 'hours' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`} onClick={() => setTab('hours')}>Working Hours</button>
-        <button className={`px-3 py-1 rounded ${tab === 'facts' ? 'bg-teal-600 text-white' : 'bg-gray-100'}`} onClick={() => setTab('facts')}>Facts</button>
+    <div className="space-y-8">
+      <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-700 p-6 text-white shadow-xl sm:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">Website content</p>
+        <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Homepage</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-emerald-100 sm:text-base">
+              View and manage every homepage section from one page. Your banner slides, opening hours and facts are all shown below.
+            </p>
+          </div>
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center justify-center rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold transition hover:bg-white/20"
+          >
+            View live homepage
+          </a>
+        </div>
       </div>
 
-      {tab === 'banners' && (
-        <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[
+          { href: '#homepage-banners', label: 'Banner slides', value: bannerSlides.length, note: 'Hero images and messages' },
+          { href: '#homepage-hours', label: 'Working hours', value: workingHours.length, note: 'Opening schedule entries' },
+          { href: '#homepage-facts', label: 'Facts & figures', value: facts.length, note: 'Homepage statistics' },
+        ].map(summary => (
+          <a
+            key={summary.href}
+            href={summary.href}
+            className="group rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-emerald-950">{summary.label}</p>
+                <p className="mt-1 text-xs text-gray-500">{summary.note}</p>
+              </div>
+              <span className="flex h-11 min-w-11 items-center justify-center rounded-xl bg-emerald-100 px-3 text-lg font-bold text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white">
+                {summary.value}
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <section id="homepage-banners" className="scroll-mt-24 space-y-6 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Banner Slides</h2>
+              <p className="mt-1 text-sm text-gray-500">Preview each homepage hero banner and select a card to edit it.</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700">Add New Banner</button>
@@ -875,48 +911,60 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
             )}
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="lg:w-1/2 space-y-3">
+          <div className="flex flex-col gap-6 lg:flex-row">
+            <div className="grid gap-4 sm:grid-cols-2 lg:w-1/2 lg:grid-cols-1 xl:grid-cols-2">
               {bannerSlides.map((slide, index) => (
-                <div
+                <article
                   key={slide.id}
-                  className={`flex items-center gap-3 border rounded-xl p-3 transition-colors cursor-pointer ${selectedSlideId === slide.id ? 'border-teal-500 bg-teal-50' : 'hover:bg-gray-50'}`}
+                  className={`cursor-pointer overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${selectedSlideId === slide.id ? 'border-emerald-500 ring-2 ring-emerald-100' : 'border-gray-200'}`}
                   onClick={() => handleSelectSlide(slide)}
                 >
-                  <img
-                    src={slide.image || '/placeholder.png'}
-                    alt={slide.title || `slide-${index + 1}`}
-                    className="w-24 h-16 object-cover rounded border"
-                    onError={e => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-gray-900 truncate">{slide.title || 'Untitled Slide'}</div>
-                    <div className="text-xs text-gray-600 truncate">{slide.description || 'No description set'}</div>
-                    <div className="text-xs text-gray-500 truncate">Highlight: {slide.highlight || '—'}</div>
+                  <div className="relative h-36 overflow-hidden bg-gray-100">
+                    <img
+                      src={slide.image || '/placeholder.png'}
+                      alt={slide.title || `slide-${index + 1}`}
+                      className="h-full w-full object-cover transition duration-300 hover:scale-105"
+                      onError={e => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
+                    />
+                    <span className="absolute left-3 top-3 rounded-full bg-emerald-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur">
+                      {slide.highlight || `Banner ${index + 1}`}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, -1); }}
-                      className="px-2 py-1 border rounded"
-                      disabled={index === 0}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, 1); }}
-                      className="px-2 py-1 border rounded"
-                      disabled={index === bannerSlides.length - 1}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      onClick={e => { e.stopPropagation(); handleDeleteSlide(slide.id); }}
-                      className="px-2 py-1 border rounded text-red-600"
-                    >
-                      Delete
-                    </button>
+                  <div className="p-4">
+                    <h3 className="truncate text-sm font-bold text-gray-900">{slide.title || 'Untitled banner'}</h3>
+                    <p className="mt-1 min-h-10 text-xs leading-5 text-gray-500">{slide.description || 'No description set.'}</p>
+                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-3">
+                      <span className="text-xs font-medium text-emerald-700">{selectedSlideId === slide.id ? 'Selected' : 'Select to edit'}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          aria-label="Move banner up"
+                          onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, -1); }}
+                          className="rounded-lg border px-2 py-1 text-gray-600 disabled:opacity-30"
+                          disabled={index === 0}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Move banner down"
+                          onClick={e => { e.stopPropagation(); handleMoveSlide(slide.id, 1); }}
+                          className="rounded-lg border px-2 py-1 text-gray-600 disabled:opacity-30"
+                          disabled={index === bannerSlides.length - 1}
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); handleDeleteSlide(slide.id); }}
+                          className="rounded-lg border border-red-100 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </article>
               ))}
               {bannerSlides.length === 0 && (
                 <div className="border border-dashed rounded-xl p-6 text-center text-sm text-gray-500">
@@ -927,10 +975,25 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
 
             <div className="lg:flex-1">
               {selectedSlideId && selectedSlide ? (
-                <div className="space-y-4 border border-gray-200 rounded-2xl p-5 shadow-sm">
+                <div className="space-y-4 rounded-2xl border border-gray-200 p-5 shadow-sm">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900">Slide Details</h3>
                     <span className="text-xs text-gray-500">ID: {selectedSlideId}</span>
+                  </div>
+
+                  <div className="relative h-52 overflow-hidden rounded-2xl bg-emerald-950">
+                    <img
+                      src={slideImage || selectedSlide.image || '/placeholder.png'}
+                      alt="Selected banner preview"
+                      className="h-full w-full object-cover opacity-70"
+                      onError={e => { (e.target as HTMLImageElement).src = '/placeholder.png'; }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/20 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                      {slideHighlight && <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-200">{slideHighlight}</p>}
+                      <p className="mt-1 text-xl font-bold">{slideTitle || 'Banner title preview'}</p>
+                      <p className="mt-1 max-w-xl text-xs text-emerald-50/80">{slideDescription || 'Banner description preview'}</p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -988,14 +1051,13 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
               )}
             </div>
           </div>
-        </section>
-      )}
+      </section>
 
-      {tab === 'hours' && (
-        <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
+      <section id="homepage-hours" className="scroll-mt-24 space-y-6 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Working Hours</h2>
+              <p className="mt-1 text-sm text-gray-500">Each schedule entry is shown as a card, matching how visitors scan your availability.</p>
             </div>
           </div>
 
@@ -1029,10 +1091,19 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {workingHours.map(entry => (
-              <div key={entry.id} className="flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-2xl p-4">
-                <div className="w-full md:w-48">
+              <article key={entry.id} className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50/60 p-4 shadow-sm">
+                <div className="mb-4 flex items-center justify-between gap-3 border-b border-emerald-100 pb-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Opening hours</p>
+                    <p className="mt-1 text-lg font-bold text-emerald-950">{entry.day || 'Day not set'}</p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${entry.status === 'closed' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {entry.status === 'closed' ? 'Closed' : 'Open'}
+                  </span>
+                </div>
+                <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Day</label>
                   <input
                     className="w-full border px-3 py-2 rounded"
@@ -1040,7 +1111,7 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
                     onChange={e => handleWorkingHourChange(entry.id, 'day', e.target.value)}
                   />
                 </div>
-                <div className="w-full md:flex-1">
+                <div className="mt-3">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Hours</label>
                   <input
                     className="w-full border px-3 py-2 rounded"
@@ -1048,11 +1119,11 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
                     onChange={e => handleWorkingHourChange(entry.id, 'hours', e.target.value)}
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <div>
+                <div className="mt-3">
+                  <div className="w-full">
                     <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
                     <select
-                      className="border px-3 py-2 rounded"
+                      className="w-full border px-3 py-2 rounded"
                       value={entry.status}
                       onChange={e => handleWorkingHourChange(entry.id, 'status', e.target.value)}
                     >
@@ -1060,16 +1131,16 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
                       <option value="closed">Closed</option>
                     </select>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleUpdateWorkingHour(entry.id)} disabled={apiLoading} className="mt-5 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  <div className="mt-4 flex gap-2">
+                    <button onClick={() => handleUpdateWorkingHour(entry.id)} disabled={apiLoading} className="flex-1 rounded-lg bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800">
                       {apiLoading ? 'Saving...' : 'Save'}
                     </button>
-                    <button onClick={() => handleDeleteWorkingHour(entry.id)} className="mt-5 px-3 py-2 border rounded text-red-600 hover:bg-red-50">
+                    <button onClick={() => handleDeleteWorkingHour(entry.id)} className="rounded-lg border border-red-100 px-3 py-2 text-red-600 hover:bg-red-50">
                       Delete
                     </button>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
             {workingHours.length === 0 && (
               <div className="border border-dashed rounded-2xl p-6 text-center text-sm text-gray-500">
@@ -1077,11 +1148,9 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
               </div>
             )}
           </div>
-        </section>
-      )}
+      </section>
 
-      {tab === 'facts' && (
-        <section className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6 space-y-6">
+      <section id="homepage-facts" className="scroll-mt-24 space-y-6 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Facts & Figures</h2>
@@ -1098,18 +1167,29 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {facts.map(f => (
-              <div key={f.id} className="flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-2xl p-4">
-                <input className="w-full md:flex-1 border px-3 py-2 rounded" value={f.label} onChange={e => updateFact(f.id, e.target.value, f.value)} placeholder="Label" />
-                <input className="w-full md:w-40 border px-3 py-2 rounded" value={f.value} onChange={e => updateFact(f.id, f.label, e.target.value)} placeholder="Value" />
-                <button onClick={() => deleteFact(f.id)} className="px-3 py-2 border rounded text-red-600 hover:bg-red-50">Delete</button>
-              </div>
+              <article key={f.id} className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
+                <div className="bg-gradient-to-br from-emerald-800 to-teal-600 p-5 text-white">
+                  <p className="text-3xl font-bold tracking-tight">{f.value || '0'}</p>
+                  <p className="mt-1 text-sm text-emerald-100">{f.label || 'Fact label'}</p>
+                </div>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">Label</label>
+                    <input className="w-full rounded border px-3 py-2" value={f.label} onChange={e => updateFact(f.id, e.target.value, f.value)} placeholder="Label" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600">Value</label>
+                    <input className="w-full rounded border px-3 py-2" value={f.value} onChange={e => updateFact(f.id, f.label, e.target.value)} placeholder="Value" />
+                  </div>
+                  <button onClick={() => deleteFact(f.id)} className="w-full rounded-lg border border-red-100 px-3 py-2 text-sm text-red-600 hover:bg-red-50">Delete fact</button>
+                </div>
+              </article>
             ))}
             {facts.length === 0 && <div className="text-sm text-gray-500">No facts defined.</div>}
           </div>
-        </section>
-      )}
+      </section>
     </div>
   );
 }
