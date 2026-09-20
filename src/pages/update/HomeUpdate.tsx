@@ -1,4 +1,11 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
+import {
+  DEFAULT_HOMEPAGE_COPY,
+  HomeCertification,
+  HomepageCopy,
+  loadHomepageCopy,
+  saveHomepageCopy,
+} from '../../content/homepageContent';
 
 type Fact = { id: string; label: string; value: string };
 
@@ -122,9 +129,7 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
   const [factLabel, setFactLabel] = useState('');
   const [factValue, setFactValue] = useState('');
 
-  // Why Choose Us (bullets)
-  const [why, setWhy] = useState<string[]>([]);
-  const [whyInput, setWhyInput] = useState('');
+  const [homepageCopy, setHomepageCopy] = useState<HomepageCopy>(() => loadHomepageCopy());
 
   // Working hours
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
@@ -213,10 +218,6 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
         setFacts(f ? JSON.parse(f) : []);
       } catch { setFacts([]); }
     })();
-    try {
-      const w = localStorage.getItem('home.why');
-      setWhy(w ? JSON.parse(w) : []);
-    } catch { setWhy([]); }
     // Load working hours from API `/tus`. If API fails, fall back to localStorage/defaults.
     (async () => {
       try {
@@ -282,9 +283,47 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
     localStorage.setItem('home.facts', JSON.stringify(list));
   };
 
-  const persistWhy = (list: string[]) => {
-    setWhy(list);
-    localStorage.setItem('home.why', JSON.stringify(list));
+  const updateHomepageCopy = (updater: (current: HomepageCopy) => HomepageCopy) => {
+    setHomepageCopy(current => {
+      const next = updater(current);
+      saveHomepageCopy(next);
+      return next;
+    });
+  };
+
+  const updateCommitmentParagraph = (index: number, value: string) => {
+    updateHomepageCopy(current => ({
+      ...current,
+      commitmentParagraphs: current.commitmentParagraphs.map((paragraph, paragraphIndex) => (
+        paragraphIndex === index ? value : paragraph
+      )),
+    }));
+  };
+
+  const removeCommitmentParagraph = (index: number) => {
+    updateHomepageCopy(current => ({
+      ...current,
+      commitmentParagraphs: current.commitmentParagraphs.filter((_, paragraphIndex) => paragraphIndex !== index),
+    }));
+  };
+
+  const updateCertification = (id: string, field: keyof Omit<HomeCertification, 'id'>, value: string) => {
+    updateHomepageCopy(current => ({
+      ...current,
+      certifications: current.certifications.map(certification => (
+        certification.id === id ? { ...certification, [field]: value } : certification
+      )),
+    }));
+  };
+
+  const restoreHomepageCopy = () => {
+    const restored: HomepageCopy = {
+      ...DEFAULT_HOMEPAGE_COPY,
+      commitmentParagraphs: [...DEFAULT_HOMEPAGE_COPY.commitmentParagraphs],
+      certifications: DEFAULT_HOMEPAGE_COPY.certifications.map(certification => ({ ...certification })),
+    };
+    setHomepageCopy(restored);
+    saveHomepageCopy(restored);
   };
 
   const persistWorkingHours = (list: WorkingHour[]) => {
@@ -732,9 +771,24 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
     })();
   };
 
-  const clearFacts = () => {
-    localStorage.removeItem('home.facts');
-    setFacts([]);
+  const clearFacts = async () => {
+    if (facts.length === 0 || !window.confirm('Remove every homepage highlight card?')) return;
+
+    setApiLoading(true);
+    const apiFacts = facts.filter(fact => /^\d+$/.test(fact.id));
+    try {
+      await Promise.all(apiFacts.map(async fact => {
+        const response = await fetch(`https://glowac-api.onrender.com/facts/${fact.id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error(`Failed to delete fact ${fact.id}`);
+      }));
+      localStorage.removeItem('home.facts');
+      setFacts([]);
+    } catch (error) {
+      console.error('Failed to clear all facts', error);
+      alert('Some highlight cards could not be removed. Please try again.');
+    } finally {
+      setApiLoading(false);
+    }
   };
 
   const updateFact = (id: string, label: string, value: string) => {
@@ -775,24 +829,6 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
     })();
   };
 
-  // Why actions
-  const addWhy = () => {
-    const v = whyInput.trim();
-    if (!v) return;
-    persistWhy([...why, v]);
-    setWhyInput('');
-  };
-
-  const deleteWhy = (idx: number) => {
-    const next = why.filter((_, i) => i !== idx);
-    persistWhy(next);
-  };
-
-  const clearWhy = () => {
-    localStorage.removeItem('home.why');
-    setWhy([]);
-  };
-
   // Added useEffect to load banner images only once when the page reloads
   // NOTE: banner slides are loaded from the API in the main mount effect above.
   // Removed accidental extra loader that fetched `/api/banner-images` which could
@@ -820,9 +856,10 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { href: '#homepage-banners', label: 'Banner slides', value: bannerSlides.length, note: 'Hero images and messages' },
+          { href: '#homepage-copy', label: 'Homepage copy', value: homepageCopy.commitmentParagraphs.length, note: 'Relationship and commitment' },
           { href: '#homepage-hours', label: 'Working hours', value: workingHours.length, note: 'Opening schedule entries' },
           { href: '#homepage-facts', label: 'Facts & figures', value: facts.length, note: 'Homepage statistics' },
         ].map(summary => (
@@ -1053,11 +1090,201 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
           </div>
       </section>
 
+      <section id="homepage-copy" className="relative scroll-mt-24 overflow-hidden rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
+        <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-teal-100/50" />
+        <div className="absolute -bottom-28 -left-24 h-64 w-64 rounded-full bg-blue-100/40" />
+        <div className="relative">
+          <div className="mb-8 flex flex-col gap-3 border-b border-gray-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">Live-style editor</p>
+              <h2 className="mt-1 text-2xl font-bold text-gray-900">Homepage information</h2>
+              <p className="mt-1 text-sm text-gray-500">This uses the same visual structure as the public homepage. Changes are saved automatically.</p>
+            </div>
+            <button type="button" onClick={restoreHomepageCopy} className="w-fit rounded-xl border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50">
+              Restore default content
+            </button>
+          </div>
+
+          <div className="mb-12 text-center">
+            <div className="mb-4 flex flex-col justify-center gap-2 sm:flex-row">
+              <input
+                aria-label="Relationship heading first part"
+                className="min-w-0 border-0 border-b border-dashed border-gray-300 bg-transparent text-center text-3xl font-bold text-gray-600 outline-none focus:border-emerald-500 sm:w-72 sm:text-right"
+                value={homepageCopy.relationshipLead}
+                onChange={event => updateHomepageCopy(current => ({ ...current, relationshipLead: event.target.value }))}
+                placeholder="Building Strong"
+              />
+              <input
+                aria-label="Relationship heading highlighted part"
+                className="min-w-0 border-0 border-b border-dashed border-emerald-300 bg-transparent text-center text-3xl font-bold text-emerald-600 outline-none focus:border-emerald-600 sm:w-64 sm:text-left"
+                value={homepageCopy.relationshipAccent}
+                onChange={event => updateHomepageCopy(current => ({ ...current, relationshipAccent: event.target.value }))}
+                placeholder="Relationships"
+              />
+            </div>
+            <textarea
+              aria-label="Relationship description"
+              className="mx-auto block min-h-28 w-full max-w-4xl resize-y rounded-xl border border-dashed border-gray-300 bg-white/70 px-4 py-3 text-center text-lg leading-relaxed text-gray-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              value={homepageCopy.relationshipDescription}
+              onChange={event => updateHomepageCopy(current => ({ ...current, relationshipDescription: event.target.value }))}
+              placeholder="Company introduction"
+            />
+            <button
+              type="button"
+              onClick={() => updateHomepageCopy(current => ({ ...current, relationshipLead: '', relationshipAccent: '', relationshipDescription: '' }))}
+              className="mt-3 text-xs font-medium text-red-600 hover:underline"
+            >
+              Clear relationship block
+            </button>
+          </div>
+
+          <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <input
+                aria-label="Commitment title"
+                className="w-full border-0 border-b border-dashed border-gray-300 bg-transparent pb-2 text-3xl font-bold text-gray-900 outline-none focus:border-emerald-500 sm:text-4xl"
+                value={homepageCopy.commitmentTitle}
+                onChange={event => updateHomepageCopy(current => ({ ...current, commitmentTitle: event.target.value }))}
+                placeholder="Our Commitment to Excellence"
+              />
+              <div className="mt-4 space-y-3">
+                {homepageCopy.commitmentParagraphs.map((paragraph, index) => (
+                  <div key={`commitment-${index}`} className="group relative">
+                    <textarea
+                      aria-label={`Commitment paragraph ${index + 1}`}
+                      className="min-h-28 w-full resize-y rounded-xl border border-dashed border-gray-300 bg-white px-4 py-3 pr-20 text-lg leading-relaxed text-gray-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      value={paragraph}
+                      onChange={event => updateCommitmentParagraph(index, event.target.value)}
+                      placeholder="Commitment paragraph"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeCommitmentParagraph(index)}
+                      className="absolute right-3 top-3 rounded-lg bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => updateHomepageCopy(current => ({ ...current, commitmentParagraphs: [...current.commitmentParagraphs, ''] }))}
+                    className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+                  >
+                    Add paragraph
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateHomepageCopy(current => ({ ...current, commitmentTitle: '', commitmentParagraphs: [] }))}
+                    className="rounded-xl border border-red-100 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+                  >
+                    Clear commitment
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white/80 p-6 shadow-lg">
+              <input
+                aria-label="Certifications title"
+                className="mb-5 w-full border-0 border-b border-dashed border-gray-300 bg-transparent pb-2 text-center text-xl font-bold text-gray-900 outline-none focus:border-emerald-500"
+                value={homepageCopy.certificationsTitle}
+                onChange={event => updateHomepageCopy(current => ({ ...current, certificationsTitle: event.target.value }))}
+                placeholder="Our Certifications"
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                {homepageCopy.certifications.map((certification, index) => (
+                  <article key={certification.id} className={`relative rounded-lg border-2 p-3 text-center ${index % 2 === 0 ? 'border-blue-300' : 'border-gray-300'}`}>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${certification.name || 'certification'}`}
+                      onClick={() => updateHomepageCopy(current => ({ ...current, certifications: current.certifications.filter(item => item.id !== certification.id) }))}
+                      className="absolute right-2 top-2 rounded-full bg-red-50 px-2 py-1 text-[10px] font-semibold text-red-600 hover:bg-red-100"
+                    >
+                      Delete
+                    </button>
+                    <div className="mb-3 flex h-16 items-center justify-center pt-4">
+                      {certification.image ? <img src={certification.image} alt="" className="h-12 max-w-full object-contain" /> : <span className="text-xs text-gray-400">No image</span>}
+                    </div>
+                    <input
+                      aria-label="Certification name"
+                      className="mb-2 w-full rounded border border-gray-200 px-2 py-1 text-center text-xs text-gray-600"
+                      value={certification.name}
+                      onChange={event => updateCertification(certification.id, 'name', event.target.value)}
+                      placeholder="Certification name"
+                    />
+                    <input
+                      aria-label="Certification detail"
+                      className={`w-full rounded border px-2 py-1 text-center text-xs font-semibold ${index % 2 === 0 ? 'border-blue-100 text-blue-600' : 'border-gray-200 text-gray-700'}`}
+                      value={certification.detail}
+                      onChange={event => updateCertification(certification.id, 'detail', event.target.value)}
+                      placeholder="Member or certificate number"
+                    />
+                    <input
+                      aria-label="Certification image path"
+                      className="mt-2 w-full rounded border border-gray-200 px-2 py-1 text-center text-[10px] text-gray-500"
+                      value={certification.image}
+                      onChange={event => updateCertification(certification.id, 'image', event.target.value)}
+                      placeholder="/images/certificate.png"
+                    />
+                  </article>
+                ))}
+              </div>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateHomepageCopy(current => ({
+                    ...current,
+                    certifications: [
+                      ...current.certifications,
+                      { id: `certification-${Date.now()}`, name: '', image: '', detail: '' },
+                    ],
+                  }))}
+                  className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+                >
+                  Add certification
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateHomepageCopy(current => ({ ...current, certificationsTitle: '', certifications: [] }))}
+                  className="rounded-xl border border-red-100 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+                >
+                  Clear certifications
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="homepage-hours" className="scroll-mt-24 space-y-6 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Working Hours</h2>
               <p className="mt-1 text-sm text-gray-500">Each schedule entry is shown as a card, matching how visitors scan your availability.</p>
+            </div>
+          </div>
+
+          <div className="mx-auto w-full max-w-2xl rounded-lg border border-gray-200 bg-white/80 p-6 shadow-lg">
+            <h3 className="mb-4 text-center text-xl font-bold text-gray-900">Working Hours</h3>
+            <div className="space-y-3">
+              {workingHours.map((schedule, index) => (
+                <div
+                  key={`preview-${schedule.id}`}
+                  className={`flex items-center justify-between rounded-lg border-l-4 p-3 transition-all duration-300 hover:scale-[1.02] ${schedule.status === 'open' ? 'border-teal-500 bg-teal-50 hover:bg-teal-100' : 'border-gray-400 bg-gray-50 hover:bg-gray-100'}`}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`h-3 w-3 rounded-full ${schedule.status === 'open' ? 'animate-pulse bg-teal-500' : 'bg-gray-400'}`} />
+                    <span className="font-semibold text-gray-900">{schedule.day || 'Day not set'}</span>
+                  </div>
+                  <span className={`font-medium ${schedule.status === 'open' ? 'text-teal-600' : 'text-gray-500'}`}>
+                    {schedule.hours || (schedule.status === 'closed' ? 'Closed' : 'Hours not set')}
+                  </span>
+                </div>
+              ))}
+              {workingHours.length === 0 && <p className="py-4 text-center text-sm text-gray-500">No working hours shown.</p>}
             </div>
           </div>
 
@@ -1151,12 +1378,55 @@ const normalizeWorkingHours = (raw: unknown): WorkingHour[] => {
       </section>
 
       <section id="homepage-facts" className="scroll-mt-24 space-y-6 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="text-center">
+            <input
+              aria-label="Why choose us title"
+              className="mx-auto block w-full max-w-xl border-0 border-b border-dashed border-gray-300 bg-transparent pb-2 text-center text-3xl font-bold text-gray-900 outline-none focus:border-emerald-500 sm:text-4xl"
+              value={homepageCopy.whyTitle}
+              onChange={event => updateHomepageCopy(current => ({ ...current, whyTitle: event.target.value }))}
+              placeholder="Why Choose Us"
+            />
+            <div className="mx-auto mb-6 mt-3 h-1 w-24 bg-teal-500" />
+            <textarea
+              aria-label="Why choose us description"
+              className="mx-auto block min-h-28 w-full max-w-4xl resize-y rounded-xl border border-dashed border-gray-300 px-4 py-3 text-justify text-xl leading-relaxed text-gray-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              value={homepageCopy.whyDescription}
+              onChange={event => updateHomepageCopy(current => ({ ...current, whyDescription: event.target.value }))}
+              placeholder="Explain why clients should choose GLOWAC"
+            />
+            <button
+              type="button"
+              onClick={() => updateHomepageCopy(current => ({ ...current, whyTitle: '', whyDescription: '' }))}
+              className="mt-3 text-xs font-medium text-red-600 hover:underline"
+            >
+              Clear Why Choose Us
+            </button>
+          </div>
+
+          {facts.length > 0 && (
+            <div className="rounded-none border-2 border-teal-200 bg-white p-8 shadow-xl md:p-12">
+              <div className="flex flex-col items-center justify-center gap-6 text-center md:flex-row">
+                {facts.map((fact, index) => (
+                  <React.Fragment key={`preview-${fact.id}`}>
+                    {index > 0 && <div className="hidden items-center px-6 md:flex"><div className="h-24 w-[2px] rounded bg-black/90 md:h-28" /></div>}
+                    <div className="group flex-1">
+                      <div className="mb-2 text-4xl font-bold text-teal-600 transition-transform duration-300 group-hover:scale-110 md:text-5xl">{fact.value || '0'}</div>
+                      <p className="font-medium text-gray-700">{fact.label || 'Fact label'}</p>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Facts & Figures</h2>
-              <p className="text-sm text-gray-600">Control the statistics that appear on the homepage highlights panel.</p>
+              <h2 className="text-xl font-semibold text-gray-900">Edit highlight cards</h2>
+              <p className="text-sm text-gray-600">Change or remove the statistics shown in the preview above.</p>
             </div>
-            <button onClick={clearFacts} className="px-4 py-2 border rounded-md shadow-sm hover:bg-gray-50">Clear All</button>
+            <button onClick={clearFacts} disabled={apiLoading || facts.length === 0} className="rounded-md border px-4 py-2 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+              {apiLoading ? 'Updating...' : 'Clear all highlights'}
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { loadHomepageCopy } from '../content/homepageContent';
 
 // --- Request Service Cards component (moved above AboutUs to avoid runtime reference errors) ---
 export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ defaultService }) => {
@@ -179,6 +180,7 @@ export const RequestServiceCards: React.FC<{ defaultService?: string }> = ({ def
 type Hour = { id: string; day: string; hours: string; status: 'open' | 'closed' };
 
 const AboutUs: React.FC = () => {
+  const homepageCopy = loadHomepageCopy();
   const [workingHours, setWorkingHours] = useState<Hour[]>([
     { id: 'weekdays', day: 'Monday - Friday', hours: '9:00 AM - 6:00 PM', status: 'open' },
     { id: 'saturday', day: 'Saturday', hours: '09:00 AM - 5:00 PM', status: 'open' },
@@ -187,11 +189,39 @@ const AboutUs: React.FC = () => {
 
   type Fact = { id: string; label: string; value: string };
   const [facts, setFacts] = useState<Fact[]>([
-    { id: 'clients', label: 'Clients', value: '43' },
-    { id: 'projects', label: 'Projects Completed', value: '143' },
-    { id: 'team', label: 'Team Members', value: '52' },
-    { id: 'tests', label: 'Tests We Conduct', value: '200+' },
+    { id: 'satisfaction', label: 'Client Satisfaction', value: '98%' },
+    { id: 'support', label: 'Customer Support', value: '24/7' },
+    { id: 'experience', label: 'Years of Experience', value: '15+' },
   ]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const res = await fetch('https://glowac-api.onrender.com/tus');
+        if (!mounted || !res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped: Hour[] = data.map((entry: any, index: number) => ({
+            id: String(entry.id ?? `working-hour-${index}`),
+            day: String(entry.day ?? ''),
+            hours: String(entry.hours ?? ''),
+            status: String(entry.status ?? '').toLowerCase() === 'closed' ? 'closed' : 'open',
+          }));
+          setWorkingHours(mapped);
+          try { localStorage.setItem('home.workingHours', JSON.stringify(mapped)); } catch {}
+        }
+      } catch {
+        try {
+          const stored = localStorage.getItem('home.workingHours');
+          if (stored && mounted) setWorkingHours(JSON.parse(stored));
+        } catch {}
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -234,51 +264,41 @@ const AboutUs: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
           {/* Left: Company description (Background paragraphs loaded from API, no defaults) */}
           <div className="space-y-0 mx-4 sm:mx-0">
-            <h4 id="our-commitment" className="text-4xl sm:text-5xl font-bold text-gray-900 mb-0 mx-2 sm:mx-0">
-              Our Commitment to Excellence
-            </h4>
-            <p className="text-xl sm:text-1xl mx-auto text-gray-700 leading-relaxed text-justify">
-              GLOWAC is committed to building strong relationships with clients by providing exceptional customer service, the highest quality legally defensible data.
-            </p>
-            <p className="text-xl sm:text-1xl mx-auto  text-gray-700 leading-relaxed text-justify">
-              Besides training, experience and knowledge of the GLOWAC team members, their values are merged to reflect the following criteria for business success.
-            </p>
-            <p className="text-xl sm:text-1xl mx-auto text-gray-700 leading-relaxed text-justify">
-              Our focus on quality, instrumentation, and adherence to recognised standards ensures reliable results for engineers, contractors, and researchers.
-            </p>
+            {homepageCopy.commitmentTitle && (
+              <h4 id="our-commitment" className="text-4xl sm:text-5xl font-bold text-gray-900 mb-0 mx-2 sm:mx-0">
+                {homepageCopy.commitmentTitle}
+              </h4>
+            )}
+            {homepageCopy.commitmentParagraphs.map((paragraph, index) => (
+              paragraph ? (
+                <p key={`${index}-${paragraph.slice(0, 20)}`} className="text-xl sm:text-1xl mx-auto text-gray-700 leading-relaxed text-justify">
+                  {paragraph}
+                </p>
+              ) : null
+            ))}
           </div>
 
           {/* Right: Working Hours and Certifications as separate cards */}
           <div className="space-y-6">
             {/* Certifications Card */}
-            <div className="bg-white/80 p-6 rounded-lg shadow-lg border border-gray-200">
-              <h4 className="text-xl font-bold text-gray-900 mb-4 text-center">Our Certifications</h4>
-              <div className="grid grid-cols-2 gap-4">
-                {/* Engineer Certificate */}
-                <div className="border-2 border-blue-300 rounded-lg p-3 text-center hover:border-blue-500 transition-colors duration-300 bg-transparent">
-                  <div className="flex items-center justify-center mb-2">
-                    <img 
-                      src="/images/engineer-logo.png" 
-                      alt="Engineer Certification" 
-                      className="w-30 h-14 object-contain"
-                    />
-                  </div>
-                  <div className="text-blue-600 font-semibold text-xs">Member</div>
-                </div>
-                
-                {/* RSB Certificate */}
-                <div className="border-2 border-gray-300 rounded-lg p-3 text-center hover:border-gray-500 transition-colors duration-300 bg-transparent">
-                  <div className="flex items-center justify-center mb-2">
-                    <img 
-                      src="/images/rsb-icon.png" 
-                      alt="Rwanda Standards Board" 
-                      className="w-30 h-14 object-contain"
-                    />
-                  </div>
-                  <div className="text-gray-700 font-semibold text-xs">ISO/IEC 17025:2027</div>
+            {(homepageCopy.certificationsTitle || homepageCopy.certifications.length > 0) && (
+              <div className="bg-white/80 p-6 rounded-lg shadow-lg border border-gray-200">
+                {homepageCopy.certificationsTitle && <h4 className="text-xl font-bold text-gray-900 mb-4 text-center">{homepageCopy.certificationsTitle}</h4>}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {homepageCopy.certifications.map((certification, index) => (
+                    <div key={certification.id} className={`rounded-lg border-2 p-3 text-center transition-colors duration-300 ${index % 2 === 0 ? 'border-blue-300 hover:border-blue-500' : 'border-gray-300 hover:border-gray-500'}`}>
+                      <div className="mb-2 flex items-center justify-center">
+                        {certification.image && (
+                          <img src={certification.image} alt={certification.name} className="h-14 w-30 object-contain" />
+                        )}
+                      </div>
+                      {certification.name && <div className="mb-1 text-xs font-medium text-gray-500">{certification.name}</div>}
+                      <div className={`text-xs font-semibold ${index % 2 === 0 ? 'text-blue-600' : 'text-gray-700'}`}>{certification.detail}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Working Hours Card */}
             <div className="bg-white/80 p-6 rounded-lg shadow-lg border border-gray-200">
@@ -334,37 +354,32 @@ const AboutUs: React.FC = () => {
           {/* (Stats block moved later) */}
 
           {/* Why Choose Us section (moved here after stats) */}
-          <div className="mt-0 mb-0 text-center">
-            <h4 id="why-choose-us" className="text-4xl sm:text-1xl mx-auto lg:text-1xl font-bold text-gray-900 mb-0">Why Choose Us</h4>
-            <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
-            <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
-              We combine deep technical expertise with a commitment to client success — delivering reliable, timely, and cost-effective geotechnical solutions tailored to your project's needs.
-            </p>
-          </div>
+          {(homepageCopy.whyTitle || homepageCopy.whyDescription) && (
+            <div className="mt-0 mb-0 text-center">
+              {homepageCopy.whyTitle && <h4 id="why-choose-us" className="text-4xl sm:text-1xl mx-auto lg:text-1xl font-bold text-gray-900 mb-0">{homepageCopy.whyTitle}</h4>}
+              <div className="w-24 h-1 bg-teal-500 mx-auto mb-6"></div>
+              {homepageCopy.whyDescription && (
+                <p className="max-w-4xl mx-auto text-gray-700 text-xl sm:text-2xl leading-relaxed text-justify">
+                  {homepageCopy.whyDescription}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Additional Stats section (placed under Why Choose Us) */}
-          <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mt-8 mb-8">
+          {facts.length > 0 && <div className="bg-white rounded-0xl shadow-xl border-2 border-teal-200 p-8 md:p-12 mt-8 mb-8">
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center">
-              <div className="group flex-1">
-                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">98%</div>
-                <p className="text-gray-700 font-medium">Client Satisfaction</p>
-              </div>
-
-              <div className="hidden md:flex items-center px-6"><div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div></div>
-
-              <div className="group flex-1">
-                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">24/7</div>
-                <p className="text-gray-700 font-medium">Customer Support</p>
-              </div>
-
-              <div className="hidden md:flex items-center px-6"><div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div></div>
-
-              <div className="group flex-1">
-                <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">15+</div>
-                <p className="text-gray-700 font-medium">Years of Experience</p>
-              </div>
+              {facts.map((fact, index) => (
+                <React.Fragment key={fact.id}>
+                  {index > 0 && <div className="hidden md:flex items-center px-6"><div className="h-24 md:h-28 w-[2px] bg-black/90 rounded"></div></div>}
+                  <div className="group flex-1">
+                    <div className="text-4xl md:text-5xl font-bold text-teal-600 mb-2 group-hover:scale-110 transition-transform duration-300">{fact.value}</div>
+                    <p className="text-gray-700 font-medium">{fact.label}</p>
+                  </div>
+                </React.Fragment>
+              ))}
             </div>
-          </div>
+          </div>}
 
           {/* Request Service section removed from About page — moved to Services page */}
         </div>

@@ -1,6 +1,13 @@
 import React from 'react';
+import { loadHomepageCopy } from '../content/homepageContent';
 
 const TrustSection: React.FC = () => {
+  const content = loadHomepageCopy();
+
+  if (!content.relationshipLead && !content.relationshipAccent && !content.relationshipDescription) {
+    return null;
+  }
+
   return (
     <section className="py-6 relative">
       {/* Background decoration */}
@@ -14,8 +21,8 @@ const TrustSection: React.FC = () => {
           {/* Trust and Company Info */}
           <div className="text-center mx-4 sm:mx-0 mb-6">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              <span className="text-gray-600">Building Strong </span>
-              <span className="text-emerald-600">Relationships</span>
+              <span className="text-gray-600">{content.relationshipLead}{content.relationshipLead && content.relationshipAccent ? ' ' : ''}</span>
+              <span className="text-emerald-600">{content.relationshipAccent}</span>
             </h2>
             
             {/* <h2 className="text-4xl sm:text-5xl font-bold leading-tight mb-8">
@@ -30,12 +37,11 @@ const TrustSection: React.FC = () => {
               <span className="text-teal-600">region</span>
             </h2> */}
             
-            <p className="text-lg text-gray-700 leading-relaxed max-w-4xl mx-auto">
-              GLOWAC is a Geotechnical Engineering firm and 
-              performs Architectural and Engineering activities and related 
-              technical consultancy services to coordinates specialist 
-              trades for industrial/commercial projects.
-            </p>
+            {content.relationshipDescription && (
+              <p className="text-lg text-gray-700 leading-relaxed max-w-4xl mx-auto">
+                {content.relationshipDescription}
+              </p>
+            )}
           </div>
         </div>
       </div>
