@@ -10,16 +10,16 @@ const useScrollToTop = () => {
 };
 
 const UpdatePage: React.FC = () => {
-  useScrollToTop(); // Scroll to top when page loads
+  useScrollToTop();
   return (
-    <main className="pt-20 pb-12">
+    <div className="min-h-screen bg-emerald-50/40 lg:pl-72">
       <UpdateHeader />
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mt-4">
+      <main className="min-h-screen px-4 pb-12 pt-20 sm:px-6 lg:px-8 lg:pt-8">
+        <div className="mx-auto max-w-7xl">
           <Outlet />
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 };
 

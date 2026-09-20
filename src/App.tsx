@@ -67,8 +67,8 @@ function RouterLayout() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <ScrollProgressCircle />
-      <Footer />
+      {!isUpdate && <ScrollProgressCircle />}
+      {!isUpdate && <Footer />}
     </>
   );
 }
